@@ -1,0 +1,24 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# .NET build
+_build/
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# Logs
+logs/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# LLM models
+models/

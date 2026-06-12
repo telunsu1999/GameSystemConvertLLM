@@ -1,0 +1,27 @@
+{
+  "actions": {
+    "ignore": {
+      "steps": [
+        {"type":"record_event", "event_type":"npc_ignore_player", "event_tags":["social"]}
+      ]
+    },
+    "alert": {
+      "steps": [
+        {"type":"set_attr", "field":"alert_state", "value":1},
+        {"type":"record_event", "event_type":"npc_alert", "event_tags":["combat"]}
+      ]
+    },
+    "rest": {
+      "steps": [
+        {"type":"add_attr", "field":"stamina", "value":10},
+        {"type":"record_event", "event_type":"npc_rest", "event_tags":["daily"]}
+      ]
+    },
+    "close_shop": {
+      "steps": [
+        {"type":"set_attr", "field":"shop_open", "value":0},
+        {"type":"record_event", "event_type":"shop_closed", "event_tags":["trade"]}
+      ]
+    }
+  }
+}

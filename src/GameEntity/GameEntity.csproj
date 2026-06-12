@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>netstandard2.1</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup><PackageReference Include="Newtonsoft.Json" Version="13.0.4" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+    <ProjectReference Include="..\Entity\Attributes\Attributes.csproj" />
+    <ProjectReference Include="..\Entity\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\Entity\Triggers\TriggerSystem.csproj" />
+    <ProjectReference Include="..\Entity\Actions\ActionResolver.csproj" />
+    <ProjectReference Include="..\System\Clock\WorldClock.csproj" />
+    <ProjectReference Include="..\System\Log\Logger.csproj" />
+  </ItemGroup>
+</Project>

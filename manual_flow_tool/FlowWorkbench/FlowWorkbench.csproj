@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\attribute_module\AttributeModule\AttributeModule.csproj" />
+    <ProjectReference Include="..\..\data_collector\System\Data\DataCollector.csproj" />
+    <ProjectReference Include="..\..\event_system\System\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\..\prompt_template\System\Prompt\PromptTemplate.csproj" />
+    <ProjectReference Include="..\..\semantic_engine\System\Rules\SemanticEngine.csproj" />
+  </ItemGroup>
+
+</Project>

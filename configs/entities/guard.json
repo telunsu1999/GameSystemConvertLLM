@@ -1,0 +1,21 @@
+{
+  "id": "guard",
+  "name": "铁卫",
+  "attrs": [
+    {"key":"name","type":"string","value":"铁卫","tags":["identity"]},
+    {"key":"personality","type":"string","value":"勇敢,忠诚,暴躁","tags":["identity"]},
+    {"key":"prompt_template","type":"string","value":"default","tags":["meta"]},
+    {"key":"hp","type":"number","value":150,"tags":["vital","hp"]},
+    {"key":"hp_max","type":"number","value":150,"tags":["vital","hp"]},
+    {"key":"stamina","type":"number","value":80,"tags":["vital"]},
+    {"key":"stamina_max","type":"number","value":100,"tags":["vital"]},
+    {"key":"gold","type":"number","value":30,"tags":["currency"]},
+    {"key":"food_owned","type":"number","value":3,"tags":["daily"]},
+    {"key":"location","type":"string","value":"城门","tags":["world"]},
+    {"key":"moving","type":"number","value":0,"tags":["travel"]},
+    {"key":"dead","type":"number","value":0,"tags":["combat"]}
+  ],
+  "schedule": "configs/schedules/guard.json",
+  "triggers": "configs/triggers/guard.json",
+  "actions": ["configs/actions/common.json", "configs/actions/guard.json"]
+}

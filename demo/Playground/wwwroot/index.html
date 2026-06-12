@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GameLoop Playground</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;height:100vh}
+#top{display:flex;align-items:center;gap:10px;padding:6px 12px;background:#0d1b2a;border-bottom:2px solid #0f3460}
+#top button{padding:5px 12px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:12px}
+#top button:hover{background:#1a4a8a}
+#top .time{font-size:17px;font-weight:bold;color:#e94560;min-width:180px}
+#top .divider{width:1px;height:22px;background:#0f3460}
+#llm-bar{display:flex;align-items:center;gap:8px;margin-left:auto;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:bold}
+#llm-bar.running{background:#0a2a1a;border:1px solid #00ff88;color:#00ff88}
+#llm-bar.stopped{background:#2a0a0a;border:1px solid #ff4444;color:#ff4444}
+#llm-bar.loading{background:#2a2a0a;border:1px solid #e9c445;color:#e9c445}
+#llm-bar .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+#llm-bar.running .dot{background:#00ff88;animation:pulse 1.5s infinite}
+#llm-bar.loading .dot{background:#e9c445;animation:spin .8s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.llm-thinking{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#0d1b2a;border:2px solid #e9c445;border-radius:8px;padding:20px 30px;text-align:center}
+.llm-thinking.active{display:block}
+.llm-thinking .spinner{width:30px;height:30px;border:3px solid #0f3460;border-top:3px solid #e9c445;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+.llm-thinking .msg{color:#e9c445;font-size:14px;margin-top:8px}
+#main{display:flex;flex:1;overflow:hidden}
+#npcs{display:flex;gap:10px;padding:10px;flex:1;overflow-y:auto}
+.npc{flex:1;min-width:270px;max-width:380px;background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:10px}
+.npc h3{font-size:15px;margin-bottom:2px}
+.npc .bar{margin:3px 0;display:flex;align-items:center;gap:5px}
+.npc .bar .lbl{width:35px;font-size:10px;color:#aaa}
+.npc .bar .fill{flex:1;height:10px;background:#0f3460;border-radius:5px;overflow:hidden}
+.npc .bar .fill div{height:100%;border-radius:5px;transition:width .3s}
+.npc .bar .fill .hp{background:#e94560}.npc .bar .fill .st{background:#e9c445}
+.npc .info{margin:4px 0;font-size:12px}.npc .info span{color:#888}
+.npc .upcoming{margin-top:6px;font-size:10px;color:#777}
+.npc .actions{margin-top:8px;display:flex;gap:5px}
+.npc .actions button{flex:1;padding:4px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
+.npc .actions button:hover{background:#1a4a8a}
+#right{width:420px;display:flex;flex-direction:column;background:#16213e;border-left:1px solid #0f3460}
+#right .tab-bar{display:flex}
+#right .tab-bar button{flex:1;padding:6px;background:#0f3460;border:none;color:#aaa;cursor:pointer;font-size:12px}
+#right .tab-bar button.sel{background:#16213e;color:#eee;border-bottom:2px solid #e94560}
+#right .tab{flex:1;overflow-y:auto;display:none;padding:8px;font-size:12px}
+#right .tab.active{display:block}
+#events .e{padding:3px 0;border-bottom:1px solid #0f3460;color:#aaa}
+#events .e span{color:#00ff88;margin-right:4px}
+.llm-session{border:1px solid #0f3460;border-radius:4px;margin:6px 0;padding:6px;background:#0d1b2a}
+.llm-session .meta{font-size:10px;color:#888;margin-bottom:4px}
+.llm-session .meta .npc{color:#e9c445;font-weight:bold}
+.llm-session .prompt{font-size:11px;color:#ccc;max-height:200px;overflow-y:auto;white-space:pre-wrap;background:#1a1a2e;padding:4px;border-radius:2px;margin:4px 0}
+.llm-session .response{font-size:13px;padding:4px 8px;border-radius:3px;margin:4px 0}
+.llm-session .response.ok{background:#0a2a1a;color:#00ff88}
+.llm-session .response.err{background:#2a0a0a;color:#ff4444}
+.llm-session .response.pending{background:#2a2a0a;color:#e9c445}
+#trace .t{margin:2px 0;padding:3px 5px;border-radius:3px;background:#0f3460}
+#trace .t .step{color:#e9c445;margin-right:5px}
+#trace .t .phase{color:#00ff88;margin-right:5px}
+#debug{padding:8px;border-top:1px solid #0f3460;display:flex;flex-wrap:wrap;gap:5px}
+#debug input,#debug select{padding:3px 5px;background:#1a1a2e;border:1px solid #0f3460;color:#eee;border-radius:3px;font-size:11px;width:65px}
+#debug select{width:85px}
+#debug button{padding:3px 7px;background:#0f3460;border:1px solid #0f3460;color:#eee;cursor:pointer;border-radius:3px;font-size:11px}
+#debug button:hover{background:#1a4a8a}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:999;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:16px;min-width:500px;max-width:700px;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:12px;font-size:16px;color:#e94560}
+.modal .close{float:right;cursor:pointer;font-size:20px;color:#aaa}
+.modal .sec{margin:10px 0}
+.modal .sec h4{font-size:13px;color:#e9c445;margin-bottom:4px}
+.modal .sec div{font-size:12px;color:#ccc;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="time" id="time">Spring D1 0:00 Tick 0</div>
+  <div class="divider"></div>
+  <button onclick="send({type:'tick',count:1})">+1</button>
+  <button onclick="send({type:'tick',count:6})">+6</button>
+  <button onclick="send({type:'tick',count:24})">+24</button>
+  <button onclick="send({type:'tick',count:144})">+144</button>
+  <div class="divider"></div>
+  <div id="llm-bar" class="stopped">
+    <span class="dot"></span>
+    <span id="llm-text">LLM: Stopped</span>
+    <button onclick="send({type:'start_llm'})" style="font-size:10px;padding:2px 8px">Start</button>
+    <button onclick="send({type:'stop_llm'})" style="font-size:10px;padding:2px 8px">Stop</button>
+    <button onclick="send({type:'toggle_llm'})" style="font-size:10px;padding:2px 8px">Toggle</button>
+  </div>
+</div>
+<div class="llm-thinking" id="thinking">
+  <div class="spinner"></div>
+  <div id="thinking-npc"></div>
+  <div class="msg">LLM thinking...</div>
+</div>
+<div id="main">
+  <div id="npcs"></div>
+  <div id="right">
+    <div class="tab-bar">
+      <button class="sel" onclick="switchTab('events', this)">Events</button>
+      <button onclick="switchTab('llm-sessions', this)">LLM</button>
+      <button onclick="switchTab('trace', this)">Trace</button>
+    </div>
+    <div class="tab active" id="tab-events"><div id="events"></div></div>
+    <div class="tab" id="tab-llm-sessions"><div id="sessions"></div></div>
+    <div class="tab" id="tab-trace"><div id="trace"></div></div>
+    <div id="debug">
+      <select id="dbNpc"><option value="blacksmith">布洛克</option><option value="merchant">老雷</option><option value="guard">铁卫</option></select>
+      <input id="dbField" placeholder="field" value="hp">
+      <input id="dbValue" placeholder="value" value="50">
+      <button onclick="debugSetAttr()">SetAttr</button>
+      <input id="evType" placeholder="type" value="death" style="width:50px">
+      <input id="evTags" placeholder="tags" value="mine">
+      <button onclick="debugAddEvent()">AddEvent</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="semModal"><div class="modal"><span class="close" onclick="closeModal()">&times;</span><div id="semContent"></div></div></div>
+
+<script>
+let ws,lid=0;
+function connect(){
+  ws=new WebSocket(`ws://${location.host}/ws`);
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.type==='state') renderState(m)
+    else if(m.type==='event') addEvent(m.tick,m.text)
+    else if(m.type==='trace') addTrace(m.step,m.phase,m.detail)
+    else if(m.type==='semantic') showSemanticModal(m)
+    else if(m.type==='llm_status') updateLlmBar(m)
+    else if(m.type==='llm_thinking'){lid=m.sessionId;showThinking(m.npcId)}
+    else if(m.type==='llm_done'){hideThinking();addSession(m)}
+  };
+  ws.onclose=()=>setTimeout(connect,2000);
+}
+connect();
+
+function send(obj){if(ws&&ws.readyState===1)ws.send(JSON.stringify(obj))}
+
+function updateLlmBar(m){
+  let bar=document.getElementById('llm-bar');
+  bar.className=m.running?'running':'stopped';
+  let t=m.running?(m.online?'LLM: Online':'LLM: Starting...'):'LLM: Stopped';
+  document.getElementById('llm-text').textContent=t;
+}
+
+function showThinking(npcId){
+  document.getElementById('thinking').classList.add('active');
+  document.getElementById('thinking-npc').textContent=npcId||'';
+}
+function hideThinking(){
+  document.getElementById('thinking').classList.remove('active');
+}
+
+let sessions=[];
+function addSession(m){
+  sessions.push(m);
+  renderSessions();
+}
+function renderSessions(){
+  let h='';
+  for(let s of sessions.slice(-20).reverse()){
+    let cls=s.error?'err':s.latency?'ok':'pending';
+    let resp=s.error?s.error:(s.response||'waiting...');
+    let meta=s.npcId+' @ T'+s.tick+(s.latency?` (${s.latency}ms)`:s.error?' (FAIL)':'');
+    h+=`<div class="llm-session">
+      <div class="meta"><span class="npc">${meta}</span></div>
+      <div class="prompt">${s.prompt||''}</div>
+      <div class="response ${cls}">${resp}</div>
+    </div>`;
+  }
+  document.getElementById('sessions').innerHTML=h||'No LLM sessions yet';
+}
+
+function renderState(s){
+  document.getElementById('time').textContent=`${s.season} D${s.day} ${s.timeBlock} H${s.hour} Tick ${s.tick}`;
+  let h='';
+  for(const[id,n]of Object.entries(s.npcs||{})){
+    let hpPct=Math.max(0,n.hp/n.hpMax*100),stPct=n.stamina/100*100;
+    let status=n.dead?'DEAD':n.moving?'MOVING':'idle';
+    let up=n.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join('<br>');
+    h+=`<div class="npc">
+      <h3>${n.name||id}</h3>
+      <div class="bar"><div class="lbl">HP</div><div class="fill"><div class="hp" style="width:${hpPct}%"></div></div><span style="font-size:10px">${n.hp}/${n.hpMax}</span></div>
+      <div class="bar"><div class="lbl">SP</div><div class="fill"><div class="st" style="width:${stPct}%"></div></div><span style="font-size:10px">${n.stamina}</span></div>
+      <div class="info"><span>Gold:</span>${n.gold} <span>At:</span>${n.location} <span>${status}</span> <span>Cur:</span>${n.currentAction}</div>
+      <div class="upcoming">${up}</div>
+      <div class="actions">
+        <button onclick="send({type:'semantic',npcId:'${id}'})">Detail</button>
+        <button onclick="send({type:'interact',npcId:'${id}'})">Interact</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('npcs').innerHTML=h;
+}
+
+let eventCount=0;
+function addEvent(tick,text){
+  let el=document.getElementById('events');
+  el.innerHTML+=`<div class="e"><span>[T${tick}]</span>${text}</div>`;
+  if(++eventCount>300) el.firstChild.remove();
+  el.scrollTop=el.scrollHeight;
+}
+
+function addTrace(step,phase,detail){
+  let el=document.getElementById('trace');
+  let ph=phase=='trigger'?'Trigger':phase=='collect'?'Collect':phase=='prompt'?'Prompt':phase=='llm'?'LLM':phase=='resolve'?'Resolve':phase;
+  let cl=phase=='llm'&&detail.includes('waiting')?' style="color:#e9c445"':phase=='llm'&&detail.includes('failed')?' style="color:#ff4444"':'';
+  el.innerHTML+=`<div class="t"${cl}><span class="step">[${step}]</span><span class="phase">${ph}</span>${detail}</div>`;
+  el.scrollTop=el.scrollHeight;
+  // Auto switch to Trace tab when traces come in
+  let tt=document.getElementById('tab-trace');
+  if(tt&&!tt.classList.contains('active')) switchTab('trace');
+}
+
+function switchTab(name, btn){
+  document.querySelectorAll('#right .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#right .tab-bar button').forEach(b=>b.classList.remove('sel'));
+  let tab = document.getElementById('tab-'+name);
+  if(tab) tab.classList.add('active');
+  if(btn) btn.classList.add('sel');
+}
+
+function showSemanticModal(m){
+  let texts=m.texts?Object.entries(m.texts).map(([k,v])=>k+': '+v).join('<br>'):'none';
+  let up=(m.upcoming||[]).map(u=>`T${u.tick}: ${u.action} ${u.desc}`).join('<br>')||'none';
+  let raw=m.rawAttrs?Object.entries(m.rawAttrs).map(([k,v])=>k+'='+v).join(', '):'';
+  document.getElementById('semContent').innerHTML=`
+    <h3>${m.npcId}</h3>
+    <div class="sec"><h4>Semantic</h4><div>${texts}</div></div>
+    <div class="sec"><h4>Schedule</h4><div>${up}</div></div>
+    <div class="sec"><h4>Current</h4><div>${m.current||'idle'}</div></div>
+    <div class="sec"><h4>Raw</h4><div>${raw}</div></div>`;
+  document.getElementById('semModal').classList.add('active');
+}
+function closeModal(){document.getElementById('semModal').classList.remove('active')}
+
+function debugSetAttr(){
+  send({type:'set_attr',npcId:document.getElementById('dbNpc').value,
+    field:document.getElementById('dbField').value,
+    value:parseInt(document.getElementById('dbValue').value)||document.getElementById('dbValue').value});
+}
+function debugAddEvent(){
+  send({type:'add_event',eventType:document.getElementById('evType').value,
+    tags:document.getElementById('evTags').value.split(','),
+    data:{who:document.getElementById('evType').value=='death'?'miner':'?'},
+    perceive:document.getElementById('dbNpc').value});
+}
+</script>
+</body>
+</html>

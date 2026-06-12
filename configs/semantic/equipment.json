@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "type": "ratio_status","output": "weapon_condition","current": "weapon_durability","max": "weapon_max",
+      "thresholds": [
+        { "ratio": [0, 0.1],"text": "武器耐久不足10%" },
+        { "ratio": [0.11, 0.3],"text": "武器耐久低于30%" },
+        { "ratio": [0.31, 0.6],"text": "武器耐久约一半" },
+        { "ratio": [0.61, 1.0],"text": "武器耐久良好" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "armor_condition","current": "armor_durability","max": "armor_max",
+      "thresholds": [
+        { "ratio": [0, 0.1],"text": "防具耐久不足10%" },
+        { "ratio": [0.11, 0.3],"text": "防具耐久低于30%" },
+        { "ratio": [0.31, 0.6],"text": "防具耐久约一半" },
+        { "ratio": [0.61, 1.0],"text": "防具耐久良好" }
+      ]
+    },
+    { "type": "key_value","output": "weapon","field": "weapon_name","template": "武器: {value}" },
+    { "type": "key_value","output": "armor","field": "armor_name","template": "防具: {value}" }
+  ]
+}

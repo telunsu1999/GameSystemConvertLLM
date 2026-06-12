@@ -1,0 +1,21 @@
+{
+  "id": "merchant",
+  "name": "老雷",
+  "attrs": [
+    {"key":"name","type":"string","value":"老雷","tags":["identity"]},
+    {"key":"personality","type":"string","value":"精明,健谈,贪财","tags":["identity"]},
+    {"key":"prompt_template","type":"string","value":"default","tags":["meta"]},
+    {"key":"hp","type":"number","value":80,"tags":["vital","hp"]},
+    {"key":"hp_max","type":"number","value":80,"tags":["vital","hp"]},
+    {"key":"stamina","type":"number","value":80,"tags":["vital"]},
+    {"key":"stamina_max","type":"number","value":100,"tags":["vital"]},
+    {"key":"gold","type":"number","value":200,"tags":["currency"]},
+    {"key":"food_owned","type":"number","value":3,"tags":["daily"]},
+    {"key":"location","type":"string","value":"商店","tags":["world"]},
+    {"key":"moving","type":"number","value":0,"tags":["travel"]},
+    {"key":"dead","type":"number","value":0,"tags":["combat"]}
+  ],
+  "schedule": "configs/schedules/merchant.json",
+  "triggers": "configs/triggers/merchant.json",
+  "actions": ["configs/actions/common.json"]
+}

@@ -1,0 +1,7 @@
+{
+  "items": [
+    { "action_type": "spawn",  "tags": ["combat","zone"],   "params": {"monster":"slime","count":3},   "every_tick": 12 },
+    { "action_type": "spawn",  "tags": ["combat","zone"],   "params": {"monster":"wolf","count":1},    "every_tick": 72 },
+    { "action_type": "spawn",  "tags": ["combat","boss"],   "params": {"monster":"treant","count":1},  "every_tick": 1440 }
+  ]
+}

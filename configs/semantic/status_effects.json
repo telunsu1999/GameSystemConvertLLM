@@ -1,0 +1,29 @@
+{
+  "rules": [
+    { "type": "conditional","output":"haste","conditions":[{"field":"haste","op":"eq","value":1}],"template":"加速中" },
+    { "type": "conditional","output":"protect","conditions":[{"field":"protect","op":"eq","value":1}],"template":"护盾中" },
+    { "type": "conditional","output":"shell","conditions":[{"field":"shell","op":"eq","value":1}],"template":"魔盾中" },
+    { "type": "conditional","output":"regen","conditions":[{"field":"regen","op":"eq","value":1}],"template":"再生中" },
+    { "type": "conditional","output":"reraise","conditions":[{"field":"reraise","op":"eq","value":1}],"template":"自动复活中" },
+    { "type": "conditional","output":"float","conditions":[{"field":"float","op":"eq","value":1}],"template":"浮空" },
+    { "type": "conditional","output":"reflect","conditions":[{"field":"reflect","op":"eq","value":1}],"template":"反射中" },
+    { "type": "conditional","output":"transparent","conditions":[{"field":"transparent","op":"eq","value":1}],"template":"透明" },
+    { "type": "conditional","output":"poison","conditions":[{"field":"poison","op":"eq","value":1}],"template":"中毒" },
+    { "type": "conditional","output":"blind","conditions":[{"field":"blind","op":"eq","value":1}],"template":"黑暗" },
+    { "type": "conditional","output":"silence","conditions":[{"field":"silence","op":"eq","value":1}],"template":"沉默" },
+    { "type": "conditional","output":"frog","conditions":[{"field":"frog","op":"eq","value":1}],"template":"青蛙" },
+    { "type": "conditional","output":"petrify","conditions":[{"field":"petrify","op":"eq","value":1}],"template":"石化" },
+    { "type": "conditional","output":"confuse","conditions":[{"field":"confuse","op":"eq","value":1}],"template":"混乱" },
+    { "type": "conditional","output":"charm","conditions":[{"field":"charm","op":"eq","value":1}],"template":"魅惑" },
+    { "type": "conditional","output":"sleep","conditions":[{"field":"sleep","op":"eq","value":1}],"template":"睡眠" },
+    { "type": "conditional","output":"slow","conditions":[{"field":"slow","op":"eq","value":1}],"template":"迟缓" },
+    { "type": "conditional","output":"stop","conditions":[{"field":"stop","op":"eq","value":1}],"template":"停止" },
+    { "type": "conditional","output":"immobilize","conditions":[{"field":"immobilize","op":"eq","value":1}],"template":"移动不能" },
+    { "type": "conditional","output":"death_sentence","conditions":[{"field":"death_sentence","op":"eq","value":1}],"template":"死之宣告" },
+    { "type": "conditional","output":"dead","conditions":[{"field":"dead","op":"eq","value":1}],"template":"战斗不能" },
+    { "type": "conditional","output":"zombie","conditions":[{"field":"zombie","op":"eq","value":1}],"template":"僵尸" },
+    { "type": "conditional","output":"blood_suck","conditions":[{"field":"blood_suck","op":"eq","value":1}],"template":"吸血" },
+    { "type": "event_summary","output":"memory_crystal","match":{"type":"crystal_appear"},"template":"{npc}化为了水晶" },
+    { "type": "event_summary","output":"memory_petrify_death","match":{"type":"petrify_death"},"template":"{npc}被石化了" }
+  ]
+}

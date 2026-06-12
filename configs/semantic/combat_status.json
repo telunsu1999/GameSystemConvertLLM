@@ -1,0 +1,28 @@
+{
+  "rules": [
+    { "type": "key_value",   "output": "hp_status",  "field":"hp","template":"HP: {hp}" },
+    { "type": "key_value",   "output": "mp_status",  "field":"mp","template":"MP: {mp}" },
+    { "type": "key_value",   "output": "atk",        "field":"pa","template":"物理攻击: {pa}" },
+    { "type": "key_value",   "output": "mag",        "field":"ma","template":"魔法攻击: {ma}" },
+    { "type": "key_value",   "output": "spd",        "field":"spd","template":"速度: {spd}" },
+    { "type": "key_value",   "output": "move",       "field":"move","template":"移动力: {move}" },
+    { "type": "key_value",   "output": "jump",       "field":"jump","template":"跳跃力: {jump}" },
+    { "type": "key_value",   "output": "ct",         "field":"ct","template":"CT: {ct}" },
+    { "type": "ratio_status","output": "hp_ratio",   "field_c":"hp","field_m":"hp_max","template":"HP 剩余比例 {ratio_percent}" },
+    { "type": "ratio_status","output": "mp_ratio",   "field_c":"mp","field_m":"mp_max","template":"MP 剩余比例 {ratio_percent}" },
+    { "type": "conditional","output": "hp_critical",
+      "conditions":[ {"compute":"ratio","field_c":"hp","field_m":"hp_max","op":"lt","value":0.2} ],
+      "template":"HP危急" },
+    { "type": "conditional","output": "hp_low",
+      "conditions":[ {"compute":"ratio","field_c":"hp","field_m":"hp_max","op":"lt","value":0.5} ],
+      "template":"HP偏低" },
+    { "type": "conditional","output": "mp_depleted",
+      "conditions":[ {"compute":"ratio","field_c":"mp","field_m":"mp_max","op":"lt","value":0.1} ],
+      "template":"MP耗尽" },
+    { "type": "key_value",   "output": "weapon",     "field":"weapon","template":"武器: {weapon}" },
+    { "type": "key_value",   "output": "shield",     "field":"shield","template":"盾: {shield}" },
+    { "type": "key_value",   "output": "head",       "field":"head","template":"头盔: {head}" },
+    { "type": "key_value",   "output": "body",       "field":"body","template":"铠甲: {body}" },
+    { "type": "key_value",   "output": "accessory",  "field":"accessory","template":"饰品: {accessory}" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "rules": [
+    {
+      "type": "comparison","output": "iron_status","left": "iron_owned","right": "iron_needed",
+      "cases": [
+        { "op": "lt","text": "铁锭不足: 需{right}个, 有{left}个" },
+        { "op": "gte","text": "铁锭充足" }
+      ]
+    },
+    {
+      "type": "conditional","output": "danger_warning",
+      "conditions": [
+        {"field":"danger_level","op":"eq","value":"high"},
+        {"compute":"ratio","field_c":"hp","field_m":"hp_max","op":"lt","value":0.3}
+      ],
+      "template": "生命值低且区域危险"
+    }
+  ]
+}

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flow Workbench</title>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --panel: #fffaf1;
+      --panel-strong: #f7efe0;
+      --ink: #1f1a14;
+      --muted: #6d6255;
+      --line: #d7c7ae;
+      --accent: #a24b2a;
+      --accent-2: #315c4a;
+      --shadow: 0 18px 50px rgba(78, 52, 24, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(162, 75, 42, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(49, 92, 74, 0.14), transparent 26%),
+        linear-gradient(180deg, #f8f4ec 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .hero-card, .panel {
+      background: rgba(255, 250, 241, 0.92);
+      border: 1px solid rgba(215, 199, 174, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-card {
+      padding: 24px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 4vw, 54px);
+      line-height: 0.95;
+      font-weight: 800;
+    }
+
+    .hero p, .meta, .hint {
+      color: var(--muted);
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .meta span {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    input, textarea, select, button {
+      font: inherit;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: #fffdf8;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .mini-input { min-width: 110px; }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: wait; transform: none; }
+
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: var(--accent-2); color: #fff; }
+    .ghost { background: var(--panel-strong); color: var(--ink); border: 1px solid var(--line); }
+    .danger { background: #e8c8bf; color: #6d2410; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .collection-switch {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .collection-switch button.active {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .repeat-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item-card {
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .nested-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nested-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .status {
+      min-height: 48px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f8f2e6;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+
+    .result-block {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-block pre {
+      margin: 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: #191611;
+      color: #f5ebd8;
+      overflow: auto;
+      min-height: 90px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1100px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 { grid-column: span 1; }
+      .field-grid, .field-grid-3, .row, .nested-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Manual Flow Tool</div>
+        <h1>属性、事件、提示词、LLM 一页串起来</h1>
+        <p>这个页面直接调用新建的 C# workbench 接口，复用现有 AttributeModule、EventSystem、DataCollector、PromptTemplate，并可把生成的提示词继续发给本地 Qwen3 runner。</p>
+        <div class="meta">
+          <span>AttributeModule</span>
+          <span>EventSystem</span>
+          <span>DataCollector</span>
+          <span>PromptTemplate</span>
+          <span>local_qwen3_runner</span>
+        </div>
+      </div>
+      <div class="hero-card stack">
+        <div>
+          <div class="eyebrow">Runner</div>
+          <div class="tagline">先启动当前 Web 工具，再按需启动 Python LLM 服务。</div>
+        </div>
+        <div class="status" id="statusBox">准备加载配置...</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel span-4">
+        <div class="panel-header">
+          <div>
+            <h2>角色基础信息</h2>
+            <div class="hint">这些字段会自动写入 name、personality、prompt_template 属性。</div>
+          </div>
+        </div>
+        <div class="field-grid">
+          <label>NpcId
+            <input id="npcId" value="blacksmith">
+          </label>
+          <label>模板名
+            <select id="templateName"></select>
+          </label>
+          <label>名称
+            <input id="name" value="布洛克">
+          </label>
+          <label>性格
+            <input id="personality" value="勇敢、勤劳、不怕吃苦">
+          </label>
+        </div>
+      </div>
+
+      <div class="panel span-8">
+        <div class="panel-header">
+          <div>
+            <h2>收集与提示词配置</h2>
+            <div class="hint">可以直接用已有 collect 配置，也可以手动填写 tags / rules。</div>
+          </div>
+        </div>
+
+        <div class="collection-switch">
+          <button class="ghost active" id="modeConfigBtn" type="button">使用配置文件</button>
+          <button class="ghost" id="modeManualBtn" type="button">手动配置</button>
+        </div>
+
+        <div id="configModePanel">
+          <div class="field-grid-3">
+            <label>Collect 配置
+              <select id="configName"></select>
+            </label>
+            <label>任务
+              <input id="task" value="打造10把铁剑（铁锭不足）">
+            </label>
+            <label>候选行动
+              <input id="optionsLine" value="花钱去工会收购铁锭 (安全) | 自己去矿洞挖矿 (危险免费)">
+            </label>
+          </div>
+        </div>
+
+        <div id="manualModePanel" hidden>
+          <div class="field-grid-3">
+            <label>属性标签
+              <input id="attrTags" value="vital,hp,trade,world,social">
+            </label>
+            <label>事件标签
+              <input id="eventTags" value="mine,iron,danger,trade">
+            </label>
+            <label>规则文件
+              <input id="ruleFiles" value="npc_state,npc_danger,social,adventure_memory">
+            </label>
+            <label>最近天数
+              <input id="eventDays" type="number" value="7">
+            </label>
+            <label>事件上限
+              <input id="eventLimit" type="number" value="5">
+            </label>
+            <label>排序
+              <select id="eventSortBy">
+                <option value="time_desc">time_desc</option>
+                <option value="time_asc">time_asc</option>
+                <option value="score_desc">score_desc</option>
+              </select>
+            </label>
+            <label>来源过滤
+              <input id="eventSourceFilter" value="witnessed,told_by,player_told,rumor">
+            </label>
+            <label>任务
+              <input id="manualTask" value="打造10把铁剑（铁锭不足）">
+            </label>
+            <label>候选行动
+              <input id="manualOptionsLine" value="花钱去工会收购铁锭 (安全) | 自己去矿洞挖矿 (危险免费)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel span-6">
+        <div class="panel-header">
+          <div>
+            <h2>属性</h2>
+            <div class="hint">支持 number / string / bool，tags 用逗号分隔。</div>
+          </div>
+          <button class="ghost" id="addAttributeBtn" type="button">新增属性</button>
+        </div>
+        <div class="repeat-list" id="attributesList"></div>
+      </div>
+
+      <div class="panel span-6">
+        <div class="panel-header">
+          <div>
+            <h2>事件</h2>
+            <div class="hint">每条事件可以附带 data 字段和 perception 列表。</div>
+          </div>
+          <button class="ghost" id="addEventBtn" type="button">新增事件</button>
+        </div>
+        <div class="repeat-list" id="eventsList"></div>
+      </div>
+
+      <div class="panel span-4">
+        <div class="panel-header">
+          <div>
+            <h2>LLM</h2>
+            <div class="hint">默认对接本地 local_qwen3_runner。</div>
+          </div>
+          <button class="ghost" id="checkLlmBtn" type="button">检查健康状态</button>
+        </div>
+        <div class="field-grid">
+          <label>Base URL
+            <input id="llmBaseUrl" value="http://127.0.0.1:8000">
+          </label>
+          <label>Max Tokens
+            <input id="llmMaxTokens" type="number" value="256">
+          </label>
+          <label>Temperature
+            <input id="llmTemperature" type="number" min="0" max="2" step="0.1" value="0.7">
+          </label>
+          <label>Top P
+            <input id="llmTopP" type="number" min="0" max="1" step="0.1" value="0.9">
+          </label>
+        </div>
+        <div class="toolbar">
+          <button class="primary" id="buildPromptBtn" type="button">只生成提示词</button>
+          <button class="secondary" id="runLlmBtn" type="button">生成并调用 LLM</button>
+        </div>
+      </div>
+
+      <div class="panel span-8">
+        <div class="panel-header">
+          <div>
+            <h2>结果</h2>
+            <div class="hint">先看 raw data / semantic texts，再看 prompt 和 LLM 输出。</div>
+          </div>
+        </div>
+        <div class="result-block">
+          <strong>属性快照</strong>
+          <pre id="attributesOutput"></pre>
+          <strong>Raw Data</strong>
+          <pre id="rawOutput"></pre>
+          <strong>Semantic Texts</strong>
+          <pre id="semanticOutput"></pre>
+          <strong>Prompt</strong>
+          <pre id="promptOutput"></pre>
+          <strong>LLM Response</strong>
+          <pre id="llmOutput"></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <template id="attributeTemplate">
+    <div class="item-card attribute-item">
+      <div class="item-header">
+        <strong>属性</strong>
+        <button class="danger remove-attribute" type="button">删除</button>
+      </div>
+      <div class="row">
+        <label>名称<input data-field="name"></label>
+        <label>类型
+          <select data-field="type">
+            <option value="string">string</option>
+            <option value="number">number</option>
+            <option value="bool">bool</option>
+          </select>
+        </label>
+        <label>值<input data-field="value"></label>
+        <label>Tags<input data-field="tags" placeholder="vital,hp"></label>
+      </div>
+    </div>
+  </template>
+
+  <template id="eventTemplate">
+    <div class="item-card event-item">
+      <div class="item-header">
+        <strong>事件</strong>
+        <div class="controls">
+          <button class="ghost add-data" type="button">新增 data</button>
+          <button class="ghost add-perception" type="button">新增 perception</button>
+          <button class="danger remove-event" type="button">删除</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>类型<input data-field="type"></label>
+        <label>Tags<input data-field="tags" placeholder="mine,danger"></label>
+      </div>
+      <div>
+        <div class="hint">Data</div>
+        <div class="nested-list data-list"></div>
+      </div>
+      <div>
+        <div class="hint">Perceptions</div>
+        <div class="nested-list perception-list"></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="keyValueTemplate">
+    <div class="nested-row key-value-row">
+      <label>Key<input data-field="key"></label>
+      <label>Value<input data-field="value"></label>
+      <div></div>
+      <button class="danger remove-row" type="button">删除</button>
+    </div>
+  </template>
+
+  <template id="perceptionTemplate">
+    <div class="nested-row perception-row">
+      <label>NpcId<input data-field="npcId"></label>
+      <label>How<input data-field="how"></label>
+      <label>From<input data-field="from"></label>
+      <button class="danger remove-row" type="button">删除</button>
+    </div>
+  </template>
+
+  <script>
+    const state = {
+      mode: 'config',
+      bootstrap: null,
+    };
+
+    const statusBox = document.getElementById('statusBox');
+    const attributesList = document.getElementById('attributesList');
+    const eventsList = document.getElementById('eventsList');
+
+    const defaultAttributes = [
+      { name: 'hp', type: 'number', value: '85', tags: 'vital,hp' },
+      { name: 'hp_max', type: 'number', value: '100', tags: 'vital,hp' },
+      { name: 'iron_owned', type: 'number', value: '2', tags: 'trade' },
+      { name: 'iron_needed', type: 'number', value: '10', tags: 'trade' },
+      { name: 'location', type: 'string', value: '铁匠铺', tags: 'world' },
+      { name: 'weather', type: 'string', value: '阴天', tags: 'world' },
+      { name: 'affection', type: 'number', value: '65', tags: 'social' },
+      { name: 'affection_max', type: 'number', value: '100', tags: 'social' }
+    ];
+
+    const defaultEvents = [
+      {
+        type: 'death',
+        tags: 'mine,danger',
+        data: [{ key: 'who', value: '矿工' }, { key: 'location', value: '矿洞' }],
+        perceptions: [{ npcId: 'blacksmith', how: 'rumor', from: 'guard' }]
+      },
+      {
+        type: 'trade',
+        tags: 'iron,trade',
+        data: [{ key: 'item', value: '铁锭' }, { key: 'change', value: '涨价' }],
+        perceptions: [{ npcId: 'blacksmith', how: 'witnessed', from: '' }]
+      }
+    ];
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+    }
+
+    function fillSelect(selectId, values, fallback) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '';
+      (values.length ? values : [fallback]).forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
+
+    function createAttributeItem(seed = {}) {
+      const node = document.getElementById('attributeTemplate').content.firstElementChild.cloneNode(true);
+      node.querySelector('[data-field="name"]').value = seed.name || '';
+      node.querySelector('[data-field="type"]').value = seed.type || 'string';
+      node.querySelector('[data-field="value"]').value = seed.value || '';
+      node.querySelector('[data-field="tags"]').value = seed.tags || '';
+      node.querySelector('.remove-attribute').addEventListener('click', () => node.remove());
+      attributesList.appendChild(node);
+    }
+
+    function addNestedRow(container, templateId, seed = {}) {
+      const row = document.getElementById(templateId).content.firstElementChild.cloneNode(true);
+      Object.entries(seed).forEach(([key, value]) => {
+        const input = row.querySelector(`[data-field="${key}"]`);
+        if (input) input.value = value || '';
+      });
+      row.querySelector('.remove-row').addEventListener('click', () => row.remove());
+      container.appendChild(row);
+    }
+
+    function createEventItem(seed = {}) {
+      const node = document.getElementById('eventTemplate').content.firstElementChild.cloneNode(true);
+      node.querySelector('[data-field="type"]').value = seed.type || '';
+      node.querySelector('[data-field="tags"]').value = seed.tags || '';
+
+      const dataList = node.querySelector('.data-list');
+      const perceptionList = node.querySelector('.perception-list');
+
+      (seed.data && seed.data.length ? seed.data : [{ key: '', value: '' }])
+        .forEach(item => addNestedRow(dataList, 'keyValueTemplate', item));
+
+      (seed.perceptions && seed.perceptions.length ? seed.perceptions : [{ npcId: '', how: '', from: '' }])
+        .forEach(item => addNestedRow(perceptionList, 'perceptionTemplate', item));
+
+      node.querySelector('.add-data').addEventListener('click', () => addNestedRow(dataList, 'keyValueTemplate'));
+      node.querySelector('.add-perception').addEventListener('click', () => addNestedRow(perceptionList, 'perceptionTemplate'));
+      node.querySelector('.remove-event').addEventListener('click', () => node.remove());
+
+      eventsList.appendChild(node);
+    }
+
+    function toggleMode(nextMode) {
+      state.mode = nextMode;
+      document.getElementById('configModePanel').hidden = nextMode !== 'config';
+      document.getElementById('manualModePanel').hidden = nextMode !== 'manual';
+      document.getElementById('modeConfigBtn').classList.toggle('active', nextMode === 'config');
+      document.getElementById('modeManualBtn').classList.toggle('active', nextMode === 'manual');
+    }
+
+    function collectAttributes() {
+      return [...attributesList.querySelectorAll('.attribute-item')].map(item => ({
+        name: item.querySelector('[data-field="name"]').value,
+        type: item.querySelector('[data-field="type"]').value,
+        value: item.querySelector('[data-field="value"]').value,
+        tags: item.querySelector('[data-field="tags"]').value,
+      }));
+    }
+
+    function collectEvents() {
+      return [...eventsList.querySelectorAll('.event-item')].map(item => ({
+        type: item.querySelector('[data-field="type"]').value,
+        tags: item.querySelector('[data-field="tags"]').value,
+        data: [...item.querySelectorAll('.key-value-row')].map(row => ({
+          key: row.querySelector('[data-field="key"]').value,
+          value: row.querySelector('[data-field="value"]').value,
+        })),
+        perceptions: [...item.querySelectorAll('.perception-row')].map(row => ({
+          npcId: row.querySelector('[data-field="npcId"]').value,
+          how: row.querySelector('[data-field="how"]').value,
+          from: row.querySelector('[data-field="from"]').value,
+        })),
+      }));
+    }
+
+    function activeTask() {
+      return state.mode === 'config'
+        ? document.getElementById('task').value
+        : document.getElementById('manualTask').value;
+    }
+
+    function activeOptions() {
+      const raw = state.mode === 'config'
+        ? document.getElementById('optionsLine').value
+        : document.getElementById('manualOptionsLine').value;
+      return raw.split('|').map(item => item.trim()).filter(Boolean);
+    }
+
+    function buildPayload(invokeLlm) {
+      return {
+        npcId: document.getElementById('npcId').value,
+        name: document.getElementById('name').value,
+        personality: document.getElementById('personality').value,
+        templateName: document.getElementById('templateName').value,
+        configName: state.mode === 'config' ? document.getElementById('configName').value : null,
+        manualConfig: state.mode === 'manual' ? {
+          attrTags: document.getElementById('attrTags').value,
+          eventTags: document.getElementById('eventTags').value,
+          ruleFiles: document.getElementById('ruleFiles').value,
+          eventDays: Number(document.getElementById('eventDays').value || 0),
+          eventLimit: Number(document.getElementById('eventLimit').value || 0),
+          eventSortBy: document.getElementById('eventSortBy').value,
+          eventSourceFilter: document.getElementById('eventSourceFilter').value,
+        } : null,
+        attributes: collectAttributes(),
+        events: collectEvents(),
+        task: activeTask(),
+        options: activeOptions(),
+        invokeLlm,
+        llm: {
+          baseUrl: document.getElementById('llmBaseUrl').value,
+          maxTokens: Number(document.getElementById('llmMaxTokens').value || 256),
+          temperature: Number(document.getElementById('llmTemperature').value || 0.7),
+          topP: Number(document.getElementById('llmTopP').value || 0.9),
+        }
+      };
+    }
+
+    async function callWorkbench(invokeLlm) {
+      setStatus(invokeLlm ? '正在生成提示词并调用 LLM...' : '正在生成提示词...');
+      setBusy(true);
+      try {
+        const response = await fetch('/api/workbench/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload(invokeLlm)),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || JSON.stringify(data, null, 2));
+        }
+
+        document.getElementById('attributesOutput').textContent = JSON.stringify(data.attributes, null, 2);
+        document.getElementById('rawOutput').textContent = JSON.stringify(data.rawData, null, 2);
+        document.getElementById('semanticOutput').textContent = JSON.stringify(data.semanticTexts, null, 2);
+        document.getElementById('promptOutput').textContent = data.prompt || '';
+        document.getElementById('llmOutput').textContent = data.llm ? JSON.stringify(data.llm, null, 2) : '本次未调用 LLM';
+        setStatus(invokeLlm ? '流程完成：C# 工作流和 LLM 调用均已返回。' : '提示词已生成，可以继续发给 LLM。');
+      } catch (error) {
+        document.getElementById('llmOutput').textContent = String(error.message || error);
+        setStatus(`执行失败: ${error.message || error}`);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function checkLlmHealth() {
+      setStatus('正在检查 LLM 健康状态...');
+      setBusy(true);
+      try {
+        const baseUrl = encodeURIComponent(document.getElementById('llmBaseUrl').value);
+        const response = await fetch(`/api/llm/health?baseUrl=${baseUrl}`);
+        const data = await response.json();
+        document.getElementById('llmOutput').textContent = JSON.stringify(data, null, 2);
+        setStatus(data.reachable ? 'LLM runner 可访问。' : 'LLM runner 不可访问，请先启动 local_qwen3_runner。');
+      } catch (error) {
+        setStatus(`健康检查失败: ${error.message || error}`);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function setBusy(isBusy) {
+      document.querySelectorAll('button').forEach(button => button.disabled = isBusy);
+    }
+
+    async function bootstrap() {
+      setStatus('正在读取 collect 配置、semantic 规则和 prompt 模板...');
+      try {
+        const response = await fetch('/api/bootstrap');
+        const data = await response.json();
+        state.bootstrap = data;
+        fillSelect('configName', data.collectConfigs || [], 'dungeon_scene');
+        fillSelect('templateName', data.templates || [], 'default');
+        if (data.defaultLlmBaseUrl) {
+          document.getElementById('llmBaseUrl').value = data.defaultLlmBaseUrl;
+        }
+        setStatus('配置已加载。现在可以直接编辑属性和事件，执行整条流程。');
+      } catch (error) {
+        setStatus(`初始化失败: ${error.message || error}`);
+      }
+    }
+
+    document.getElementById('modeConfigBtn').addEventListener('click', () => toggleMode('config'));
+    document.getElementById('modeManualBtn').addEventListener('click', () => toggleMode('manual'));
+    document.getElementById('addAttributeBtn').addEventListener('click', () => createAttributeItem());
+    document.getElementById('addEventBtn').addEventListener('click', () => createEventItem());
+    document.getElementById('buildPromptBtn').addEventListener('click', () => callWorkbench(false));
+    document.getElementById('runLlmBtn').addEventListener('click', () => callWorkbench(true));
+    document.getElementById('checkLlmBtn').addEventListener('click', checkLlmHealth);
+
+    defaultAttributes.forEach(createAttributeItem);
+    defaultEvents.forEach(createEventItem);
+    bootstrap();
+  </script>
+</body>
+</html>

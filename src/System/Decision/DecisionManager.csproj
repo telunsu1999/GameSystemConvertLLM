@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup><PackageReference Include="Newtonsoft.Json" Version="13.0.4" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Entity\Attributes\Attributes.csproj" />
+    <ProjectReference Include="..\..\Entity\Triggers\TriggerSystem.csproj" />
+    <ProjectReference Include="..\..\Entity\Actions\ActionResolver.csproj" />
+    <ProjectReference Include="..\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\Clock\WorldClock.csproj" />
+    <ProjectReference Include="..\Data\DataCollector.csproj" />
+    <ProjectReference Include="..\Prompt\PromptTemplate.csproj" />
+    <ProjectReference Include="..\LLM\Client\LLMClient.csproj" />
+    <ProjectReference Include="..\Log\Logger.csproj" />
+  </ItemGroup>
+</Project>

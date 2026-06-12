@@ -1,0 +1,25 @@
+{
+  "rules": [
+    {
+      "type": "ratio_status","output": "health","current": "hp","max": "hp_max",
+      "thresholds": [
+        { "ratio": [0, 0.1],"text": "生命值不足10%" },
+        { "ratio": [0.11, 0.3],"text": "生命值低于30%" },
+        { "ratio": [0.31, 0.6],"text": "生命值约一半" },
+        { "ratio": [0.61, 0.85],"text": "生命值较高" },
+        { "ratio": [0.86, 1.0],"text": "生命值接近满" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "stamina","current": "stamina","max": "stamina_max",
+      "thresholds": [
+        { "ratio": [0, 0.2],"text": "体力不足20%" },
+        { "ratio": [0.21, 0.5],"text": "体力低于一半" },
+        { "ratio": [0.51, 1.0],"text": "体力充足" }
+      ]
+    },
+    { "type": "key_value","output": "location","field": "location","template": "当前位置: {value}" },
+    { "type": "key_value","output": "weather","field": "weather","template": "天气: {value}" },
+    { "type": "inventory_list","output": "inventory","field": "inventory","format": "{name}x{count}","prefix": "背包: " }
+  ]
+}

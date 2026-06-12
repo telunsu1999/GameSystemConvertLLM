@@ -1,0 +1,25 @@
+{
+  "rules": [
+    { "type": "key_value","output": "blessing","field": "blessing_name","template": "祝福: {value}" },
+    { "type": "key_value","output": "curse","field": "curse_name","template": "诅咒: {value}" },
+    {
+      "type": "ratio_status","output": "poison","current": "poison_stacks","max": "poison_max",
+      "thresholds": [
+        { "ratio": [0, 0.2],"text": "轻微中毒" },
+        { "ratio": [0.21, 0.5],"text": "中度中毒" },
+        { "ratio": [0.51, 0.8],"text": "重度中毒" },
+        { "ratio": [0.81, 1.0],"text": "剧毒" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "sanity","current": "sanity","max": "sanity_max",
+      "thresholds": [
+        { "ratio": [0, 0.15],"text": "理智: 极低" },
+        { "ratio": [0.16, 0.35],"text": "理智: 低" },
+        { "ratio": [0.36, 0.6],"text": "理智: 中等" },
+        { "ratio": [0.61, 0.85],"text": "理智: 高" },
+        { "ratio": [0.86, 1.0],"text": "理智: 坚定" }
+      ]
+    }
+  ]
+}

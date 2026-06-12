@@ -1,0 +1,8 @@
+{
+  "attr_tags": ["identity","social","character","job","currency","world"],
+  "event_tags": ["social","trade","reputation","rumor","quest","story"],
+  "rule_files": ["npc_state","social","job","bravery_faith","clan_world","adventure_memory"],
+  "event_days": 14,
+  "event_limit": 8,
+  "event_sort_by": "time_desc"
+}

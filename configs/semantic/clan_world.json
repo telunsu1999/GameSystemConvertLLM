@@ -1,0 +1,19 @@
+{
+  "rules": [
+    { "type": "key_value","output":"zone","field":"zone_name","template":"所在区域: {zone_name}" },
+    { "type": "key_value","output":"politics","field":"faction","template":"所属势力: {faction}" },
+    { "type": "conditional","output":"war_zone",
+      "conditions":[ {"field":"zone_status","op":"eq","value":"war"} ],
+      "template":"该区域正在发生战争" },
+    { "type": "key_value","output":"funds","field":"clan_gil","template":"公会资金: {clan_gil} Gil" },
+    { "type": "key_value","output":"clan_members","field":"clan_members","template":"公会成员: {clan_members}人" },
+    { "type": "key_value","output":"battle_count","field":"total_battles","template":"总战斗次数: {total_battles}" },
+    { "type": "key_value","output":"win_rate","field":"win_rate","template":"胜率: {win_rate}%" },
+    { "type": "event_summary","output":"memory_battle_won","match":{"type":"battle_won"},"template":"在{zone_name}的战斗中胜利" },
+    { "type": "event_summary","output":"memory_battle_lost","match":{"type":"battle_lost"},"template":"在{zone_name}的战斗中败退" },
+    { "type": "event_summary","output":"memory_arrest","match":{"type":"arrest"},"template":"因违反法则{law}被逮捕" },
+    { "type": "event_summary","output":"memory_jail","match":{"type":"jail"},"template":"在监狱中服刑{days}天" },
+    { "type": "event_summary","output":"memory_mission","match":{"type":"mission_complete","source":"witnessed"},"template":"完成了任务: {mission_name}" },
+    { "type": "event_summary","output":"memory_mission_fail","match":{"type":"mission_fail"},"template":"任务{mission_name}失败了" }
+  ]
+}

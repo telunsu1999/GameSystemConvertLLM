@@ -1,0 +1,22 @@
+{
+  "rules": [
+    {
+      "type": "conditional","output": "combat_status",
+      "conditions": [
+        {"compute":"ratio","field_c":"hp","field_m":"hp_max","op":"lt","value":0.2},
+        {"field":"enemy_count","op":"gt","value":3}
+      ],
+      "template": "生命低于20%且有4个以上敌人"
+    },
+    {
+      "type": "conditional","output": "mana_warning",
+      "conditions": [
+        {"compute":"ratio","field_c":"mp","field_m":"mp_max","op":"lt","value":0.2},
+        {"field":"nearby_enemies","op":"gt","value":0}
+      ],
+      "template": "魔力不足20%且附近有敌人"
+    },
+    { "type": "key_value","output": "danger_level","field": "danger_level","template": "区域危险等级: {value}" },
+    { "type": "key_value","output": "enemy_count","field": "enemy_count","template": "附近敌人数量: {value}" }
+  ]
+}

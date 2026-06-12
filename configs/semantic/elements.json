@@ -1,0 +1,24 @@
+{
+  "rules": [
+    { "type": "key_value","output":"fire_res","field":"fire_res","template":"火抗性: {fire_res}%" },
+    { "type": "key_value","output":"ice_res","field":"ice_res","template":"冰抗性: {ice_res}%" },
+    { "type": "key_value","output":"lightning_res","field":"lightning_res","template":"雷抗性: {lightning_res}%" },
+    { "type": "key_value","output":"wind_res","field":"wind_res","template":"风抗性: {wind_res}%" },
+    { "type": "key_value","output":"earth_res","field":"earth_res","template":"地抗性: {earth_res}%" },
+    { "type": "key_value","output":"water_res","field":"water_res","template":"水抗性: {water_res}%" },
+    { "type": "key_value","output":"holy_res","field":"holy_res","template":"圣抗性: {holy_res}%" },
+    { "type": "key_value","output":"dark_res","field":"dark_res","template":"暗抗性: {dark_res}%" },
+    { "type": "conditional","output":"fire_absorb","conditions":[{"field":"fire_res","op":"eq","value":-100}],"template":"火焰吸收" },
+    { "type": "conditional","output":"ice_absorb","conditions":[{"field":"ice_res","op":"eq","value":-100}],"template":"冰霜吸收" },
+    { "type": "conditional","output":"lightning_absorb","conditions":[{"field":"lightning_res","op":"eq","value":-100}],"template":"雷电吸收" },
+    { "type": "conditional","output":"holy_absorb","conditions":[{"field":"holy_res","op":"eq","value":-100}],"template":"圣光吸收" },
+    { "type": "conditional","output":"dark_absorb","conditions":[{"field":"dark_res","op":"eq","value":-100}],"template":"暗黑吸收" },
+    { "type": "conditional","output":"fire_immune","conditions":[{"field":"fire_res","op":"eq","value":100}],"template":"火焰免疫" },
+    { "type": "conditional","output":"ice_immune","conditions":[{"field":"ice_res","op":"eq","value":100}],"template":"冰霜免疫" },
+    { "type": "conditional","output":"lightning_immune","conditions":[{"field":"lightning_res","op":"eq","value":100}],"template":"雷电免疫" },
+    { "type": "conditional","output":"fire_weak","conditions":[{"field":"fire_res","op":"lt","value":0}],"template":"弱火" },
+    { "type": "conditional","output":"ice_weak","conditions":[{"field":"ice_res","op":"lt","value":0}],"template":"弱冰" },
+    { "type": "conditional","output":"lightning_weak","conditions":[{"field":"lightning_res","op":"lt","value":0}],"template":"弱雷" },
+    { "type": "key_value","output":"element_enhance","field":"enhance_element","template":"强化属性: {enhance_element}" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "rules": [
+    { "type": "ratio_status","output": "job_progress","field_c":"jp_current","field_m":"jp_needed","template":"职业{job_name} JP进度: {ratio_percent}" },
+    { "type": "key_value",  "output": "current_job", "field":"job_name","template":"当前职业: {job_name} (Lv.{job_level})" },
+    { "type": "key_value",  "output": "sub_job",     "field":"sub_job","template":"副职业: {sub_job}" },
+    { "type": "key_value",  "output": "move_type",   "field":"move_type","template":"移动类型: {move_type}" },
+    { "type": "conditional","output": "job_mastered",
+      "conditions": [{"field":"job_level","op":"eq","value":8}],
+      "template":"已精通当前职业" },
+    { "type": "conditional","output": "job_beginner",
+      "conditions": [{"field":"job_level","op":"lt","value":3}],
+      "template":"当前职业还不熟练" },
+    { "type": "event_summary","output": "memory_job_change","match":{"type":"job_change"},"template":"最近转职成了{new_job}" },
+    { "type": "event_summary","output": "memory_ability","match":{"type":"ability_learn"},"template":"学会了{ability}" },
+    { "type": "event_summary","output": "memory_job_mastery","match":{"type":"job_mastery"},"template":"精通了{job}职业" },
+    { "type": "event_summary","output": "memory_level_up","match":{"type":"level_up"},"template":"等级提升到了Lv.{new_level}" }
+  ]
+}

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>netstandard2.1</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Scriban" Version="5.10.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Entity\Attributes\Attributes.csproj" />
+    <ProjectReference Include="..\..\Entity\Triggers\TriggerSystem.csproj" />
+    <ProjectReference Include="..\Data\DataCollector.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+{
+  "rules": [
+    {
+      "mode": "llm",
+      "conditions": [{"field":"hour","op":"gte","value":6},{"field":"hour","op":"lt","value":12}],
+      "action_type": "decide",
+      "description": "上午",
+      "tags": ["daily","trade"]
+    },
+    {
+      "mode": "llm",
+      "conditions": [{"field":"hour","op":"gte","value":14},{"field":"hour","op":"lt","value":20}],
+      "action_type": "decide",
+      "description": "下午",
+      "tags": ["daily","trade"]
+    },
+    {
+      "mode": "llm",
+      "conditions": [{"field":"player_near","op":"eq","value":1}],
+      "action_type": "decide",
+      "description": "玩家靠近",
+      "tags": ["trade","social"]
+    },
+    {
+      "mode": "direct",
+      "conditions": [{"field":"gold","op":"lt","value":5}],
+      "action_type": "close_shop",
+      "params": {"reason":"没钱进货了"},
+      "description": "关门歇业",
+      "tags": ["trade","daily"]
+    },
+    {
+      "mode": "direct",
+      "conditions": [{"field":"hour","op":"gte","value":20}],
+      "action_type": "go_home",
+      "params": {},
+      "description": "天黑了回家",
+      "tags": ["daily"]
+    }
+  ]
+}

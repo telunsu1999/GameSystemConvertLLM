@@ -1,0 +1,8 @@
+{
+  "attr_tags": ["vital","combat","job","element","status","character","equipment"],
+  "event_tags": ["combat","kill","death","damage","buff","debuff"],
+  "rule_files": ["combat_status","elements","status_effects","job","bravery_faith","adventure_memory"],
+  "event_days": 3,
+  "event_limit": 5,
+  "event_sort_by": "score_desc"
+}

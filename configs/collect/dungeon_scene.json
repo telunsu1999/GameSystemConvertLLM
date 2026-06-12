@@ -1,0 +1,9 @@
+{
+  "attr_tags": ["vital","hp","combat","world"],
+  "event_tags": ["mine","danger","combat","treasure"],
+  "rule_files": ["adventurer_status","equipment","dungeon_danger","survival","adventure_memory"],
+  "event_days": 7,
+  "event_limit": 5,
+  "event_sort_by": "time_desc",
+  "event_source_filter": ["witnessed","told_by","player_told","rumor"]
+}

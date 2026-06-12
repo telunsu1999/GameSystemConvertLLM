@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\System\Rules\SemanticEngine.csproj" />
+    <ProjectReference Include="..\..\src\System\Data\DataCollector.csproj" />
+    <ProjectReference Include="..\..\src\Entity\Attributes\Attributes.csproj" />
+    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\..\src\System\Prompt\PromptTemplate.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

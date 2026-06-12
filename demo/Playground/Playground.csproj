@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Entity\Attributes\Attributes.csproj" />
+    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\..\src\System\Clock\WorldClock.csproj" />
+    <ProjectReference Include="..\..\src\Entity\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\..\src\Entity\Triggers\TriggerSystem.csproj" />
+    <ProjectReference Include="..\..\src\Entity\Actions\ActionResolver.csproj" />
+    <ProjectReference Include="..\..\src\System\LLM\Client\LLMClient.csproj" />
+    <ProjectReference Include="..\..\src\System\Decision\DecisionManager.csproj" />
+    <ProjectReference Include="..\..\src\System\Rules\SemanticEngine.csproj" />
+    <ProjectReference Include="..\..\src\System\Data\DataCollector.csproj" />
+    <ProjectReference Include="..\..\src\System\Prompt\PromptTemplate.csproj" />
+    <ProjectReference Include="..\..\src\System\Log\Logger.csproj" />
+    <ProjectReference Include="..\..\src\System\LLM\Manager\LLMManager.csproj" />
+    <ProjectReference Include="..\..\src\GameEntity\GameEntity.csproj" />
+    <ProjectReference Include="..\..\src\Abstractions\Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\GameLoop\GameLoop.csproj" />
+    <ProjectReference Include="..\..\src\Entity\LlmPlanner\LlmPlanner.csproj" />
+  </ItemGroup>
+</Project>

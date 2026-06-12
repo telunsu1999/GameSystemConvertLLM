@@ -1,0 +1,32 @@
+{
+  "rules": [
+    {
+      "type": "ratio_status","output": "hunger","current": "hunger_value","max": "hunger_max",
+      "thresholds": [
+        { "ratio": [0, 0.15],"text": "极度饥饿" },
+        { "ratio": [0.16, 0.4],"text": "有些饥饿" },
+        { "ratio": [0.41, 0.7],"text": "轻微饥饿" },
+        { "ratio": [0.71, 1.0],"text": "不饿" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "thirst","current": "thirst_value","max": "thirst_max",
+      "thresholds": [
+        { "ratio": [0, 0.15],"text": "极度口渴" },
+        { "ratio": [0.16, 0.4],"text": "有些口渴" },
+        { "ratio": [0.41, 1.0],"text": "不渴" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "temperature","current": "warmth","max": "warmth_max",
+      "thresholds": [
+        { "ratio": [0, 0.2],"text": "寒冷" },
+        { "ratio": [0.21, 0.5],"text": "偏冷" },
+        { "ratio": [0.51, 0.8],"text": "舒适" },
+        { "ratio": [0.81, 1.0],"text": "温暖" }
+      ]
+    },
+    { "type": "key_value","output": "torch","field": "torch_life","template": "火把剩余: {value}" },
+    { "type": "key_value","output": "area_type","field": "area_type","template": "环境: {value}" }
+  ]
+}

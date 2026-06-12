@@ -1,0 +1,26 @@
+{
+  "rules": [
+    {
+      "type": "ratio_status","output": "npc_affection","current": "affection","max": "affection_max",
+      "thresholds": [
+        { "ratio": [0, 0.1],"text": "好感度: 敌对" },
+        { "ratio": [0.11, 0.3],"text": "好感度: 冷淡" },
+        { "ratio": [0.31, 0.6],"text": "好感度: 中立" },
+        { "ratio": [0.61, 0.85],"text": "好感度: 友好" },
+        { "ratio": [0.86, 1.0],"text": "好感度: 信任" }
+      ]
+    },
+    {
+      "type": "ratio_status","output": "faction","current": "faction_rep","max": "faction_max",
+      "thresholds": [
+        { "ratio": [0, 0.1],"text": "公会声望: 极低" },
+        { "ratio": [0.11, 0.35],"text": "公会声望: 低" },
+        { "ratio": [0.36, 0.6],"text": "公会声望: 中等" },
+        { "ratio": [0.61, 0.85],"text": "公会声望: 高" },
+        { "ratio": [0.86, 1.0],"text": "公会声望: 传奇" }
+      ]
+    },
+    { "type": "key_value","output": "bounty","field": "bounty_gold","template": "悬赏金: {value}" },
+    { "type": "key_value","output": "alignment","field": "alignment","template": "阵营: {value}" }
+  ]
+}

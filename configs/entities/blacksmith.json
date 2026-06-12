@@ -1,0 +1,22 @@
+{
+  "id": "blacksmith",
+  "name": "布洛克",
+  "attrs": [
+    {"key":"name","type":"string","value":"布洛克","tags":["identity"]},
+    {"key":"personality","type":"string","value":"勤劳,憨厚,怕事","tags":["identity"]},
+    {"key":"prompt_template","type":"string","value":"default","tags":["meta"]},
+    {"key":"hp","type":"number","value":100,"tags":["vital","hp"]},
+    {"key":"hp_max","type":"number","value":100,"tags":["vital","hp"]},
+    {"key":"stamina","type":"number","value":80,"tags":["vital"]},
+    {"key":"stamina_max","type":"number","value":100,"tags":["vital"]},
+    {"key":"gold","type":"number","value":50,"tags":["currency"]},
+    {"key":"food_owned","type":"number","value":3,"tags":["daily"]},
+    {"key":"location","type":"string","value":"铁匠铺","tags":["world"]},
+    {"key":"moving","type":"number","value":0,"tags":["travel"]},
+    {"key":"dead","type":"number","value":0,"tags":["combat"]},
+    {"key":"iron_owned","type":"number","value":5,"tags":["trade"]}
+  ],
+  "schedule": "configs/schedules/blacksmith.json",
+  "triggers": "configs/triggers/blacksmith.json",
+  "actions": ["configs/actions/common.json"]
+}

@@ -1,0 +1,31 @@
+{
+  "rules": [
+    { "type": "key_value","output":"brave","field":"bravery","template":"Bravery: {bravery}" },
+    { "type": "key_value","output":"faith","field":"faith","template":"Faith: {faith}" },
+    { "type": "key_value","output":"zodiac","field":"zodiac_sign","template":"星座: {zodiac_sign}" },
+    { "type": "key_value","output":"zodiac_compat","field":"zodiac_best","template":"最佳相性星座: {zodiac_best}" },
+    { "type": "key_value","output":"zodiac_worst","field":"zodiac_worst","template":"最差相性星座: {zodiac_worst}" },
+    { "type": "conditional","output":"brave_low",
+      "conditions":[ {"field":"bravery","op":"lt","value":15} ],
+      "template":"Bravery极低: 可能成为小鸡" },
+    { "type": "conditional","output":"brave_high",
+      "conditions":[ {"field":"bravery","op":"gt","value":85} ],
+      "template":"Bravery极高: 物理输出最大化" },
+    { "type": "conditional","output":"faith_low",
+      "conditions":[ {"field":"faith","op":"lt","value":30} ],
+      "template":"Faith极低: 几乎免疫魔法" },
+    { "type": "conditional","output":"faith_high",
+      "conditions":[ {"field":"faith","op":"gt","value":85} ],
+      "template":"Faith极高: 魔法效果极强" },
+    { "type": "conditional","output":"brave_leaving",
+      "conditions":[ {"field":"bravery","op":"lt","value":10} ],
+      "template":"Bravery过低: 可能永久离队" },
+    { "type": "conditional","output":"faith_leaving",
+      "conditions":[ {"field":"faith","op":"gt","value":94} ],
+      "template":"Faith过高: 可能永久离队" },
+    { "type": "event_summary","output":"memory_brave_up","match":{"type":"brave_change","change":"up"},"template":"Bravery提升了{amount}点" },
+    { "type": "event_summary","output":"memory_brave_down","match":{"type":"brave_change","change":"down"},"template":"Bravery降低了{amount}点" },
+    { "type": "event_summary","output":"memory_faith_up","match":{"type":"faith_change","change":"up"},"template":"Faith提升了{amount}点" },
+    { "type": "event_summary","output":"memory_faith_down","match":{"type":"faith_change","change":"down"},"template":"Faith降低了{amount}点" }
+  ]
+}

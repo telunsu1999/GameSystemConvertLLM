@@ -1,0 +1,25 @@
+角色: {{name}}
+性格: {{personality}}
+
+{{if state_lines.size > 0}}
+当前状态:
+{{for line in state_lines}}
+- {{line}}
+{{end}}
+{{end}}
+
+{{if memory_lines.size > 0}}
+已知事件:
+{{for line in memory_lines}}
+- {{line}}
+{{end}}
+{{end}}
+
+任务: {{task}}
+
+可选行动:
+{{for opt in options}}
+- {{opt}}
+{{end}}
+
+请选出最符合该角色性格的行动。只需回复数字。

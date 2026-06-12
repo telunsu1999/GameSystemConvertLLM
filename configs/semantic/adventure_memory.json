@@ -1,0 +1,10 @@
+{
+  "rules": [
+    { "type": "event_summary","output": "memory_kill","match": {"type":"kill","source":"witnessed"},"template": "你击杀过{enemy}" },
+    { "type": "event_summary","output": "memory_death","match": {"type":"death_toll","source":"rumor"},"template": "听说{count}个冒险者死在{location}" },
+    { "type": "event_summary","output": "memory_treasure","match": {"type":"treasure_found","source":"witnessed"},"template": "在{location}发现过{treasure}" },
+    { "type": "event_summary","output": "memory_trap","match": {"type":"trap_triggered","source":"witnessed"},"template": "在{location}踩中过陷阱" },
+    { "type": "event_summary","output": "memory_npc","match": {"type":"reputation_change","source":"told_by_npc"},"template": "{npc}说你{opinion}" },
+    { "type": "event_summary","output": "memory_quest","match": {"type":"quest_complete","source":"witnessed"},"template": "完成了{quest_name}，获得{reward}" }
+  ]
+}
