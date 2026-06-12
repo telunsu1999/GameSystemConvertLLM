@@ -14,7 +14,8 @@
     {"key":"location","type":"string","value":"铁匠铺","tags":["world"]},
     {"key":"moving","type":"number","value":0,"tags":["travel"]},
     {"key":"dead","type":"number","value":0,"tags":["combat"]},
-    {"key":"iron_owned","type":"number","value":5,"tags":["trade"]}
+    {"key":"iron_owned","type":"number","value":5,"tags":["trade"]},
+    {"key":"llm_thinking","type":"number","value":0,"tags":["meta"]}
   ],
   "schedule": "configs/schedules/blacksmith.json",
   "triggers": "configs/triggers/blacksmith.json",

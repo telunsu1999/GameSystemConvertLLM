@@ -100,13 +100,14 @@ namespace GameLoop
                     var online = await _client.HealthCheckAsync();
                     if (online)
                     {
+                        attempts = 0;
                         if (_status == LLMStatus.Starting)
                             SetStatus(LLMStatus.Online);
                     }
                     else if (_status == LLMStatus.Online)
                     {
                         attempts++;
-                        if (attempts >= 3)
+                        if (attempts >= 15)  // 30s of consecutive failures
                         {
                             SetStatus(LLMStatus.Error);
                             return;

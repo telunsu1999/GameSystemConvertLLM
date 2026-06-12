@@ -13,7 +13,8 @@
     {"key":"food_owned","type":"number","value":3,"tags":["daily"]},
     {"key":"location","type":"string","value":"商店","tags":["world"]},
     {"key":"moving","type":"number","value":0,"tags":["travel"]},
-    {"key":"dead","type":"number","value":0,"tags":["combat"]}
+    {"key":"dead","type":"number","value":0,"tags":["combat"]},
+    {"key":"llm_thinking","type":"number","value":0,"tags":["meta"]}
   ],
   "schedule": "configs/schedules/merchant.json",
   "triggers": "configs/triggers/merchant.json",

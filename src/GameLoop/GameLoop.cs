@@ -21,6 +21,12 @@ namespace GameLoop
         public EventSystem Events => _events;
         public IReadOnlyDictionary<string, GameEntity> Entities => _entities;
         public bool LlmEnabled { get => _llmEnabled; set => _llmEnabled = value; }
+        
+        /// <summary>Fires when any entity attribute changes. (entityId, key, value)</summary>
+        public event Action<string, string, object> OnNpcAttrChanged;
+        
+        /// <summary>Fires when an LLM plan session completes (success or error).</summary>
+        public event Action<LlmSession> OnPlanSession;
 
         public GameLoop(WorldClock clock, EventSystem events)
         {
@@ -31,6 +37,26 @@ namespace GameLoop
         public void AddEntity(GameEntity entity)
         {
             _entities[entity.Id] = entity;
+            var attrs = entity.Get<Attributes>();
+            if (attrs != null)
+                attrs.OnChanged += (key, val) => OnNpcAttrChanged?.Invoke(entity.Id, key, val);
+        }
+
+        /// <summary>
+        /// Load all entities from JSON configs in a directory.
+        /// Each entity gets a LlmPlanner component attached.
+        /// </summary>
+        public void LoadEntities(string entityDir, string rootDir, LLMClient llmClient)
+        {
+            if (!System.IO.Directory.Exists(entityDir)) return;
+            foreach (var file in System.IO.Directory.GetFiles(entityDir, "*.json"))
+            {
+                var entity = EntityFactory.CreateFromJson(file, rootDir);
+                entity.Add(new LlmPlanner(llmClient, rootDir, 
+                    (session) => OnPlanSession?.Invoke(session)));
+                AddEntity(entity);
+            }
+            Logger.Info("GameLoop", $"Loaded {_entities.Count} entities");
         }
 
         public GameEntity? GetEntity(string id)
@@ -138,7 +164,8 @@ namespace GameLoop
                         tick = u.TriggerTick, action = u.ActionType,
                         detail = u.Params.ContainsKey("location") ? u.Params["location"].ToString() : ""
                     }).ToList(),
-                    currentAction = entity.Get<ActionResolver>()?.Current?.ActionType ?? "idle"
+                    currentAction = entity.Get<ActionResolver>()?.Current?.ActionType ?? "idle",
+                    llmThinking = entity.Int("llm_thinking") == 1
                 };
             }
             return new StateSnapshot

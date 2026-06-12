@@ -2,6 +2,13 @@
   "rules": [
     {
       "mode": "llm",
+      "conditions": [{"field":"hour","op":"eq","value":8}],
+      "action_type": "decide",
+      "description": "每日晨间规划",
+      "tags": ["daily","plan"]
+    },
+    {
+      "mode": "llm",
       "conditions": [{"field":"hour","op":"gte","value":6},{"field":"hour","op":"lt","value":12}],
       "action_type": "decide",
       "description": "上午",

@@ -22,15 +22,7 @@ llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
 
 var game = new GameLoop.GameLoop(clock, events);
 game.LlmEnabled = true;
-
-// Create entities and attach LlmPlanner
-foreach (var id in new[]{"blacksmith","merchant","guard"})
-{
-    var entity = EntityFactory.CreateFromJson(Path.Combine(root, "configs", "entities", $"{id}.json"), root);
-    entity.Add(new LlmPlanner(llm, root));
-    game.AddEntity(entity);
-}
-Logger.Info("Playground", "Entities initialized", new { count = game.Entities.Count });
+game.LoadEntities(Path.Combine(root, "configs", "entities"), root, llm);
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -56,6 +48,22 @@ async Task HandleSession(WebSocket ws, string root, GameLoop.GameLoop game, LLMM
         await SendLlmStatus(ws);
         void OnStatus(LLMStatus s) { try { if (ws.State == WebSocketState.Open) _ = SendLlmStatus(ws); } catch { } }
         llmManager.OnStatusChanged += OnStatus;
+        void OnAttrChanged(string entityId, string key, object val) {
+            try { if (ws.State == WebSocketState.Open) _ = Send(ws, new { type = "attr_changed", entityId, key, value = val }); } catch { }
+        }
+        game.OnNpcAttrChanged += OnAttrChanged;
+        game.OnPlanSession += (session) => {
+            try { if (ws.State == WebSocketState.Open) _ = Send(ws, new { 
+                type = "llm_done", 
+                npcId = session.NpcId, 
+                tick = session.Tick,
+                prompt = session.Prompt,
+                response = session.Response,
+                latency = session.Latency,
+                error = session.Error ? session.Response : null,
+                steps = session.Steps?.Select(s => new { tick = s.Tick, action = s.Action }).ToList()
+            }); } catch { }
+        };
         while (ws.State == WebSocketState.Open) {
             var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             if (result.MessageType == WebSocketMessageType.Close) break;

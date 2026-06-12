@@ -38,6 +38,10 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
 .npc .actions{margin-top:8px;display:flex;gap:5px}
 .npc .actions button{flex:1;padding:4px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
 .npc .actions button:hover{background:#1a4a8a}
+.npc.thinking{border-color:#e9c445;box-shadow:0 0 12px rgba(233,196,69,.3)}
+.npc .think-badge{display:none;font-size:10px;color:#e9c445;margin-left:8px;animation:pulse 1.5s infinite}
+.npc.thinking .think-badge{display:inline}
+.npc .think-badge .spinner-sm{display:inline-block;width:8px;height:8px;border:2px solid #0f3460;border-top:2px solid #e9c445;border-radius:50%;animation:spin .8s linear infinite;margin-right:3px;vertical-align:middle}
 #right{width:420px;display:flex;flex-direction:column;background:#16213e;border-left:1px solid #0f3460}
 #right .tab-bar{display:flex}
 #right .tab-bar button{flex:1;padding:6px;background:#0f3460;border:none;color:#aaa;cursor:pointer;font-size:12px}
@@ -132,6 +136,7 @@ function connect(){
     else if(m.type==='llm_status') updateLlmBar(m)
     else if(m.type==='llm_thinking'){lid=m.sessionId;showThinking(m.npcId)}
     else if(m.type==='llm_done'){hideThinking();addSession(m)}
+    else if(m.type==='attr_changed') onAttrChanged(m)
   };
   ws.onclose=()=>setTimeout(connect,2000);
 }
@@ -152,6 +157,31 @@ function showThinking(npcId){
 }
 function hideThinking(){
   document.getElementById('thinking').classList.remove('active');
+}
+
+// Real-time attribute change handling
+function onAttrChanged(m){
+  if(m.key==='llm_thinking'){
+    let card=document.querySelector(`.npc[data-id="${m.entityId}"]`);
+    if(!card) return;
+    if(m.value===1||m.value==='1'){
+      card.classList.add('thinking');
+    }else{
+      card.classList.remove('thinking');
+    }
+  } else if(m.key==='location'||m.key==='current_action'){
+    // location/action change: update NPC card info line
+    let card=document.querySelector(`.npc[data-id="${m.entityId}"]`);
+    if(card){
+      let info=card.querySelector('.info');
+      if(info) info.innerHTML=buildInfoLine(m.entityId);
+    }
+  }
+}
+
+function buildInfoLine(id){
+  // Fetch latest attrs from last state -- for real-time we use DOM
+  return '';
 }
 
 let sessions=[];
@@ -180,9 +210,10 @@ function renderState(s){
   for(const[id,n]of Object.entries(s.npcs||{})){
     let hpPct=Math.max(0,n.hp/n.hpMax*100),stPct=n.stamina/100*100;
     let status=n.dead?'DEAD':n.moving?'MOVING':'idle';
+    let thinking=n.llmThinking;
     let up=n.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join('<br>');
-    h+=`<div class="npc">
-      <h3>${n.name||id}</h3>
+    h+=`<div class="npc${thinking?' thinking':''}" data-id="${id}">
+      <h3>${n.name||id}<span class="think-badge"><span class="spinner-sm"></span>thinking</span></h3>
       <div class="bar"><div class="lbl">HP</div><div class="fill"><div class="hp" style="width:${hpPct}%"></div></div><span style="font-size:10px">${n.hp}/${n.hpMax}</span></div>
       <div class="bar"><div class="lbl">SP</div><div class="fill"><div class="st" style="width:${stPct}%"></div></div><span style="font-size:10px">${n.stamina}</span></div>
       <div class="info"><span>Gold:</span>${n.gold} <span>At:</span>${n.location} <span>${status}</span> <span>Cur:</span>${n.currentAction}</div>

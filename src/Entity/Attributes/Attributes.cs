@@ -33,6 +33,8 @@ namespace GameLoop
         private readonly Dictionary<string, HashSet<string>> _tagIndex
             = new Dictionary<string, HashSet<string>>();
 
+        public event Action<string, object> OnChanged;  // key, newValue
+
         // 闂佸啿鍘滈崑鎾绘煃閸忓浜?婵犫拃鍛粶闁搞劌缍婂銊ф喆閸曨厼寮?闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜鹃梺鍐插帨閸嬫捇鏌嶉崗澶婁壕闂佸啿鍘滈崑鎾绘煃閸忓浜?
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace GameLoop
             var attr = new AttributeValue(value, type, tags);
             _attrs[name] = attr;
             AddToIndex(name, tags);
+            OnChanged?.Invoke(name, value);
         }
 
         /// <summary>
