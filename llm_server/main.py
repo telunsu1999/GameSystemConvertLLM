@@ -13,7 +13,10 @@ Usage:
 """
 
 import argparse
+import logging
+import time
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -29,6 +32,20 @@ from llm_server.schemas import (
     ModelInfoResponse,
     ErrorResponse,
 )
+
+# --- 请求日志 ---
+_LOG_DIR = Path(__file__).parent.parent / "logs"
+_LOG_DIR.mkdir(exist_ok=True)
+_traffic_logger = logging.getLogger("llm_traffic")
+_traffic_logger.setLevel(logging.DEBUG)
+_traffic_handler = logging.FileHandler(
+    _LOG_DIR / "llm_server_traffic.log", encoding="utf-8"
+)
+_traffic_handler.setFormatter(
+    logging.Formatter("%(asctime)s | %(message)s", datefmt="%H:%M:%S")
+)
+_traffic_logger.addHandler(_traffic_handler)
+_traffic_logger.propagate = False
 
 
 @asynccontextmanager
@@ -83,7 +100,17 @@ async def model_info():
 
 @app.post("/api/v1/generate", response_model=GenerateResponse)
 async def generate(req: GenerateRequest):
+    t0 = time.perf_counter()
+    req_id = datetime.now().strftime("%H%M%S%f")[:12]
+    _traffic_logger.info(
+        "========== REQUEST %s ==========\n"
+        "max_tokens=%s  temperature=%s  top_p=%s  enable_thinking=%s\n"
+        "--- PROMPT ---\n%s\n"
+        "--- END PROMPT ---",
+        req_id, req.max_tokens, req.temperature, req.top_p, req.enable_thinking, req.prompt,
+    )
     if not model_manager.is_loaded():
+        _traffic_logger.warning("REQUEST %s | FAILED: model not loaded", req_id)
         raise HTTPException(status_code=503, detail="Model is still loading")
     try:
         result = model_manager.generate(
@@ -92,9 +119,23 @@ async def generate(req: GenerateRequest):
             temperature=req.temperature,
             top_p=req.top_p,
             enable_thinking=req.enable_thinking,
+            tools=req.tools,
+            tool_choice=req.tool_choice,
+        )
+        elapsed = time.perf_counter() - t0
+        _traffic_logger.info(
+            "========== RESPONSE %s ==========\n"
+            "tokens_used=%s  elapsed=%.2fs\n"
+            "--- OUTPUT ---\n%s\n"
+            "--- END OUTPUT ---",
+            req_id, result["tokens_used"], elapsed, result["text"],
         )
         return GenerateResponse(**result)
     except Exception as e:
+        elapsed = time.perf_counter() - t0
+        _traffic_logger.error(
+            "REQUEST %s | ERROR after %.2fs: %s", req_id, elapsed, str(e)
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

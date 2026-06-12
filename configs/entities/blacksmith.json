@@ -19,5 +19,6 @@
   ],
   "schedule": "configs/schedules/blacksmith.json",
   "triggers": "configs/triggers/blacksmith.json",
-  "actions": ["configs/actions/common.json"]
+  "actions": ["configs/actions/common.json"],
+  "goals": "configs/goals/blacksmith.json"
 }

@@ -87,7 +87,17 @@ namespace GameLoop
                 sb.AppendLine();
                 foreach (var t in collected.SemanticTexts) sb.AppendLine($"- {t}");
                 sb.AppendLine();
-                sb.AppendLine($"It is {context}, make a plan for the next few hours.");
+
+                // Inject goal context
+                var goals = entity.Get<GoalComponent>();
+                if (goals != null)
+                {
+                    var goalCtx = goals.GetGoalContext();
+                    if (!string.IsNullOrEmpty(goalCtx))
+                        sb.AppendLine(goalCtx);
+                }
+
+                sb.AppendLine($"It is {context}, make a plan aligned with your goals for the next few hours.");
                 sb.AppendLine();
                 sb.AppendLine("Available actions:");
                 for (int i = 0; i < actions.Count; i++)
@@ -106,7 +116,7 @@ namespace GameLoop
 
                 // Call LLM asynchronously
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var response = await _client.SendAsync(prompt, maxTokens: 512);
+                var response = await _client.SendAsync(prompt, maxTokens: 1024, enableThinking: true);
                 sw.Stop();
                 Logger.Info("LLM", $"Plan response: {entity.Id}",
                     new { response = response.Trim(), latencyMs = sw.ElapsedMilliseconds });

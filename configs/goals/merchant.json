@@ -1,0 +1,44 @@
+{
+  "goals": [
+    {
+      "id": "become_richest",
+      "type": "LongTerm",
+      "desc": "成为镇上最富有的商人",
+      "priority": 10,
+      "milestones": [
+        { "id": "earn500", "desc": "赚到500金币", "conditionAttr": "gold", "conditionOp": "gte", "conditionValue": 500 },
+        { "id": "earn1000", "desc": "赚到1000金币", "conditionAttr": "gold", "conditionOp": "gte", "conditionValue": 1000 },
+        { "id": "open_branch", "desc": "开分店", "conditionAttr": "branch_opened", "conditionOp": "eq", "conditionValue": 1 }
+      ]
+    },
+    {
+      "id": "sell_goods",
+      "type": "ShortTerm",
+      "desc": "卖出今天的货物",
+      "priority": 5,
+      "milestones": [
+        { "id": "sold", "desc": "完成销售", "conditionAttr": "goods_sold_today", "conditionOp": "gte", "conditionValue": 3 }
+      ]
+    },
+    {
+      "id": "daily_business",
+      "type": "ShortTerm",
+      "desc": "开门营业",
+      "priority": 3,
+      "milestones": [
+        { "id": "opened", "desc": "开店了", "conditionAttr": "shop_opened_today", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    },
+    {
+      "id": "expand_network",
+      "type": "LongTerm",
+      "desc": "扩大商业网络",
+      "priority": 7,
+      "milestones": [
+        { "id": "know_blacksmith", "desc": "认识布洛克", "conditionAttr": "knows_blacksmith", "conditionOp": "gte", "conditionValue": 1 },
+        { "id": "know_guard", "desc": "认识铁卫", "conditionAttr": "knows_guard", "conditionOp": "gte", "conditionValue": 1 },
+        { "id": "alliance", "desc": "建立商业联盟", "conditionAttr": "alliance_formed", "conditionOp": "eq", "conditionValue": 1 }
+      ]
+    }
+  ]
+}

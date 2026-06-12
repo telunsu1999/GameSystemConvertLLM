@@ -9,6 +9,6 @@ echo API docs:     http://127.0.0.1:8000/docs
 echo.
 
 cd /d "%~dp0.."
-.venv\Scripts\python.exe -m local_qwen3_runner.main %*
+.venv\Scripts\python.exe -m llm_server.main %*
 
 pause

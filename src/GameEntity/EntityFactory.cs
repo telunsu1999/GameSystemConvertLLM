@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -59,6 +60,22 @@ namespace GameLoop
             resolver.Register(new TakeDamageAction());
             resolver.Register(new TradeAction());
 
+            // Add GoalComponent + load goals
+            if (!string.IsNullOrEmpty(config.GoalsPath))
+            {
+                var goals = entity.Add(new GoalComponent());
+                var goalsPath = ResolvePath(config.GoalsPath, rootDir);
+                if (File.Exists(goalsPath))
+                {
+                    var goalsJson = File.ReadAllText(goalsPath);
+                    var goalsConfig = JsonConvert.DeserializeObject<GoalConfig>(goalsJson);
+                    if (goalsConfig?.Goals != null)
+                        foreach (var g in goalsConfig.Goals)
+                            goals.AddGoal(g);
+                }
+                goals.Wire(attrs);
+            }
+
             return entity;
         }
 
@@ -78,5 +95,11 @@ namespace GameLoop
             if (Path.IsPathRooted(path)) return path;
             return Path.Combine(rootDir, path);
         }
+    }
+
+    internal class GoalConfig
+    {
+        [JsonProperty("goals")]
+        public List<Goal> Goals { get; set; } = new List<Goal>();
     }
 }

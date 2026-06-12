@@ -9,6 +9,7 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
 #top{display:flex;align-items:center;gap:10px;padding:6px 12px;background:#0d1b2a;border-bottom:2px solid #0f3460}
 #top button{padding:5px 12px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:12px}
 #top button:hover{background:#1a4a8a}
+#top button.sel-speed{background:#e94560;border-color:#e94560}
 #top .time{font-size:17px;font-weight:bold;color:#e94560;min-width:180px}
 #top .divider{width:1px;height:22px;background:#0f3460}
 #llm-bar{display:flex;align-items:center;gap:8px;margin-left:auto;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:bold}
@@ -26,17 +27,36 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
 .llm-thinking .msg{color:#e9c445;font-size:14px;margin-top:8px}
 #main{display:flex;flex:1;overflow:hidden}
 #npcs{display:flex;gap:10px;padding:10px;flex:1;overflow-y:auto}
-.npc{flex:1;min-width:270px;max-width:380px;background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:10px}
-.npc h3{font-size:15px;margin-bottom:2px}
-.npc .bar{margin:3px 0;display:flex;align-items:center;gap:5px}
-.npc .bar .lbl{width:35px;font-size:10px;color:#aaa}
-.npc .bar .fill{flex:1;height:10px;background:#0f3460;border-radius:5px;overflow:hidden}
-.npc .bar .fill div{height:100%;border-radius:5px;transition:width .3s}
+.npc{flex:1;min-width:300px;max-width:420px;background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.npc h3{font-size:16px;margin:0;display:flex;align-items:center;gap:6px}
+.npc h3 .persona{font-size:10px;color:#888;font-weight:normal}
+.npc .bar{margin:0;display:flex;align-items:center;gap:5px}
+.npc .bar .lbl{width:22px;font-size:10px;color:#aaa;text-align:right}
+.npc .bar .fill{flex:1;height:8px;background:#0f3460;border-radius:4px;overflow:hidden}
+.npc .bar .fill div{height:100%;border-radius:4px;transition:width .3s}
 .npc .bar .fill .hp{background:#e94560}.npc .bar .fill .st{background:#e9c445}
-.npc .info{margin:4px 0;font-size:12px}.npc .info span{color:#888}
-.npc .upcoming{margin-top:6px;font-size:10px;color:#777}
-.npc .actions{margin-top:8px;display:flex;gap:5px}
-.npc .actions button{flex:1;padding:4px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
+.npc .info{font-size:11px;color:#aaa;display:flex;gap:10px}
+.npc .info b{color:#eee}
+.npc .attrs-row{font-size:9px;color:#666;padding:1px 0}
+.npc .attrs-row .a-cat{color:#0f3460;background:#0a0a1a;padding:0 4px;border-radius:2px;margin-right:6px;font-size:8px}
+.npc .goals-title{font-size:10px;color:#e9c445;text-transform:uppercase;letter-spacing:1px;margin-top:4px;border-bottom:1px solid #0f3460;padding-bottom:2px}
+.npc .goal-section{margin:2px 0}
+.npc .goal-section .gs-label{font-size:9px;color:#555;padding:1px 0;letter-spacing:1px}
+.npc .goal-row{display:flex;align-items:center;gap:5px;font-size:11px;padding:1px 0}
+.npc .goal-row .g-icon{font-size:12px;width:14px;text-align:center}
+.npc .goal-row .g-desc{flex:1;color:#ccc}
+.npc .goal-row .g-progress{font-size:10px;color:#888;min-width:40px;text-align:right}
+.npc .goal-row .g-bar{width:40px;height:4px;background:#0f3460;border-radius:2px;overflow:hidden}
+.npc .goal-row .g-bar div{height:100%;border-radius:2px}
+.npc .goal-row.long .g-bar div{background:#e9c445}
+.npc .goal-row.short .g-bar div{background:#0f3460}
+.npc .goal-row .g-milestone{font-size:9px;color:#666;margin-left:19px}
+.npc .goal-row.long .g-icon{color:#e9c445}
+.npc .goal-row.short .g-icon{color:#0f3460}
+.npc .goal-row.done .g-desc{color:#555;text-decoration:line-through}
+.npc .upcoming{margin-top:4px;font-size:10px;color:#777;border-top:1px solid #0f3460;padding-top:4px}
+.npc .actions{margin-top:4px;display:flex;gap:5px}
+.npc .actions button{flex:1;padding:5px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
 .npc .actions button:hover{background:#1a4a8a}
 .npc.thinking{border-color:#e9c445;box-shadow:0 0 12px rgba(233,196,69,.3)}
 .npc .think-badge{display:none;font-size:10px;color:#e9c445;margin-left:8px;animation:pulse 1.5s infinite}
@@ -58,6 +78,14 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
 .llm-session .response.ok{background:#0a2a1a;color:#00ff88}
 .llm-session .response.err{background:#2a0a0a;color:#ff4444}
 .llm-session .response.pending{background:#2a2a0a;color:#e9c445}
+.llm-session .think-box{margin:4px 0;border:1px solid #0f3460;border-radius:3px;overflow:hidden}
+.llm-session .think-box .think-header{cursor:pointer;padding:3px 8px;background:#0f3460;font-size:10px;color:#aaa;display:flex;justify-content:space-between}
+.llm-session .think-box .think-header:hover{background:#1a4a8a}
+.llm-session .think-box .think-body{font-size:10px;color:#888;padding:4px 8px;max-height:120px;overflow-y:auto;white-space:pre-wrap;background:#1a1a2e;display:none}
+.llm-session .think-box.open .think-body{display:block}
+.llm-session .reply-box{padding:4px 8px;border-radius:3px;margin:4px 0;font-size:13px}
+.llm-session .reply-box.ok{background:#0a2a1a;color:#00ff88}
+.llm-session .reply-box.err{background:#2a0a0a;color:#ff4444}
 #trace .t{margin:2px 0;padding:3px 5px;border-radius:3px;background:#0f3460}
 #trace .t .step{color:#e9c445;margin-right:5px}
 #trace .t .phase{color:#00ff88;margin-right:5px}
@@ -84,6 +112,13 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
   <button onclick="send({type:'tick',count:6})">+6</button>
   <button onclick="send({type:'tick',count:24})">+24</button>
   <button onclick="send({type:'tick',count:144})">+144</button>
+  <div class="divider"></div>
+  <button id="btn-auto" onclick="toggleAutoTick()" style="background:#0a2a1a;border-color:#00ff88;color:#00ff88">▶ Auto</button>
+  <button id="btn-speed1" onclick="setAutoSpeed(500)" style="font-size:10px;padding:2px 6px">.5s</button>
+  <button id="btn-speed2" onclick="setAutoSpeed(1000)" style="font-size:10px;padding:2px 6px">1s</button>
+  <button id="btn-speed3" onclick="setAutoSpeed(2000)" class="sel-speed" style="font-size:10px;padding:2px 6px">2s</button>
+  <button id="btn-speed4" onclick="setAutoSpeed(5000)" style="font-size:10px;padding:2px 6px">5s</button>
+  <button id="btn-block" onclick="toggleBlock()" style="font-size:10px;padding:2px 6px;background:#2a2a0a;border-color:#e9c445;color:#e9c445">□ Block</button>
   <div class="divider"></div>
   <div id="llm-bar" class="stopped">
     <span class="dot"></span>
@@ -134,9 +169,11 @@ function connect(){
     else if(m.type==='trace') addTrace(m.step,m.phase,m.detail)
     else if(m.type==='semantic') showSemanticModal(m)
     else if(m.type==='llm_status') updateLlmBar(m)
+    else if(m.type==='auto_tick_state') updateAutoTickUI(m)
     else if(m.type==='llm_thinking'){lid=m.sessionId;showThinking(m.npcId)}
-    else if(m.type==='llm_done'){hideThinking();addSession(m)}
+    else if(m.type==='llm_done'){hideThinking();addSession(m);updateUpcoming(m)}
     else if(m.type==='attr_changed') onAttrChanged(m)
+    else if(m.type==='goals_updated') onGoalsUpdated(m)
   };
   ws.onclose=()=>setTimeout(connect,2000);
 }
@@ -151,12 +188,88 @@ function updateLlmBar(m){
   document.getElementById('llm-text').textContent=t;
 }
 
+// Auto-tick state
+let autoRunning=false, autoInterval=2000, autoBlock=false;
+function updateAutoTickUI(m){
+  autoRunning=m.running; autoInterval=m.interval; autoBlock=m.blockOnThinking;
+  let btn=document.getElementById('btn-auto');
+  btn.textContent=autoRunning?'⏸ Pause':'▶ Auto';
+  btn.style.background=autoRunning?'#2a0a0a':'#0a2a1a';
+  btn.style.borderColor=autoRunning?'#ff4444':'#00ff88';
+  btn.style.color=autoRunning?'#ff4444':'#00ff88';
+  // Highlight active speed
+  document.querySelectorAll('#top button[id^=btn-speed]').forEach(b=>b.classList.remove('sel-speed'));
+  let speedBtn=document.getElementById('btn-speed'+
+    (autoInterval<=500?1:autoInterval<=1000?2:autoInterval<=2000?3:4));
+  if(speedBtn)speedBtn.classList.add('sel-speed');
+  // Block toggle
+  let bb=document.getElementById('btn-block');
+  bb.textContent=autoBlock?'☑ Block':'☐ Block';
+  bb.style.background=autoBlock?'#e9c445':'#2a2a0a';
+  bb.style.color=autoBlock?'#1a1a2e':'#e9c445';
+}
+function toggleAutoTick(){
+  if(autoRunning) send({type:'auto_tick',action:'stop'});
+  else send({type:'auto_tick',action:'start',interval:autoInterval,blockOnThinking:autoBlock});
+}
+function setAutoSpeed(ms){
+  autoInterval=ms;
+  if(autoRunning) send({type:'auto_tick',action:'set_interval',interval:ms});
+}
+function toggleBlock(){
+  autoBlock=!autoBlock;
+  if(autoRunning) send({type:'auto_tick',action:'set_block',blockOnThinking:autoBlock});
+  else updateAutoTickUI({running:false,interval:autoInterval,blockOnThinking:autoBlock});
+}
+
+function onGoalsUpdated(m){
+  let card=document.querySelector(`.npc[data-id="${m.npcId}"]`);
+  if(!card||!m.goals) return;
+  // Re-render goals section only
+  let goalsDiv=card.querySelector('.goals-title');
+  if(!goalsDiv) return;
+  // Remove old goal content after the title
+  let next=goalsDiv.nextSibling;
+  while(next&&!next.classList?.contains('upcoming')&&next.tagName!=='BUTTON'){
+    let t=next.nextSibling; next.remove(); next=t;
+  }
+  // Build new goal HTML
+  let n={goals:m.goals};
+  let html='';
+  if(n.goals&&n.goals.length){
+    let long=n.goals.filter(g=>g.type==='long'&&!g.completed);
+    let short=n.goals.filter(g=>g.type==='short'&&!g.completed);
+    let done=n.goals.filter(g=>g.completed);
+    function renderGoal(g){
+      let icon=g.type==='long'?'★':'·';
+      let cls=g.type==='long'?'long':'short';
+      let mile=g.milestone?`<div class="g-milestone">→ ${g.milestone}</div>`:'';
+      return `<div class="goal-row ${cls}">
+        <span class="g-icon">${icon}</span><span class="g-desc">${g.desc}</span>
+        <span class="g-progress">${g.progress}%</span>
+        <div class="g-bar"><div style="width:${g.progress}%"></div></div>
+      </div>${mile}`;
+    }
+    if(long.length) html+='<div class="goal-section"><div class="gs-label">▸ 长期目标</div>'+long.map(renderGoal).join('')+'</div>';
+    if(short.length) html+='<div class="goal-section"><div class="gs-label">▸ 短期目标</div>'+short.map(renderGoal).join('')+'</div>';
+    if(done.length) html+='<div class="goal-section"><div class="gs-label">▸ 已完成</div>'+done.map(renderGoal).join('')+'</div>';
+  }
+  goalsDiv.insertAdjacentHTML('afterend', html);
+}
+
 function showThinking(npcId){
   document.getElementById('thinking').classList.add('active');
   document.getElementById('thinking-npc').textContent=npcId||'';
 }
 function hideThinking(){
   document.getElementById('thinking').classList.remove('active');
+}
+function updateUpcoming(m){
+  if(!m.upcoming||!m.npcId) return;
+  let card=document.querySelector(`.npc[data-id="${m.npcId}"]`);
+  if(!card) return;
+  let upDiv=card.querySelector('.upcoming');
+  if(upDiv) upDiv.innerHTML=m.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join('<br>');
 }
 
 // Real-time attribute change handling
@@ -184,6 +297,39 @@ function buildInfoLine(id){
   return '';
 }
 
+function renderAttrs(n){
+  if(!n.allAttrs) return '<div class="attrs-row"></div>';
+  // Tag categories for display
+  const basicTags=['vital','hp','world','travel'];
+  const itemTags=['daily','trade','currency'];
+  const ignore=['identity','meta','combat'];
+  let basic=[], items=[], special=[];
+  for(let [k,a] of Object.entries(n.allAttrs)){
+    if(!a||!a.t) continue;
+    let tags=a.t||[], v=a.v;
+    if(tags.some(t=>ignore.includes(t))) continue;
+    if(tags.some(t=>basicTags.includes(t))){
+      let label=k.replace(/_/g,' ');
+      if(k==='location') label='📍位置'; else if(k==='hp') label='❤️生命';
+      else if(k==='hp_max') { basic.push(`上限${v}`); continue; }
+      else if(k==='stamina') label='⚡体力'; else if(k==='stamina_max') continue;
+      else if(k==='moving'&&v==0) continue;
+      basic.push(`${label}:${v}`);
+    }else if(tags.some(t=>itemTags.includes(t))){
+      let icon=k.includes('food')?'🍖':k.includes('iron')?'⚒':k.includes('gold')?'💰':'📦';
+      items.push(`${icon}${v}`);
+    }else{
+      let label=k.replace(/_/g,' ');
+      if(v!==0&&v!=='0'&&v!=='') special.push(`${label}:${v}`);
+    }
+  }
+  let h='';
+  if(basic.length) h+=`<div class="attrs-row"><span class="a-cat">基础</span>${basic.join(' | ')}</div>`;
+  if(items.length) h+=`<div class="attrs-row"><span class="a-cat">道具</span>${items.join(' ')}</div>`;
+  if(special.length) h+=`<div class="attrs-row"><span class="a-cat">特殊</span>${special.join(' | ')}</div>`;
+  return h||'<div class="attrs-row"></div>';
+}
+
 let sessions=[];
 function addSession(m){
   sessions.push(m);
@@ -193,12 +339,28 @@ function renderSessions(){
   let h='';
   for(let s of sessions.slice(-20).reverse()){
     let cls=s.error?'err':s.latency?'ok':'pending';
-    let resp=s.error?s.error:(s.response||'waiting...');
     let meta=s.npcId+' @ T'+s.tick+(s.latency?` (${s.latency}ms)`:s.error?' (FAIL)':'');
+    // Split thinking and reply
+    let think='', reply=s.error?s.error:(s.response||'waiting...');
+    if(!s.error&&s.response){
+      let m=s.response.match(/<think>([\s\S]*?)<\/think>/);
+      if(m){ think=m[1].trim(); reply=s.response.replace(/<think>[\s\S]*?<\/think>/,'').trim(); }
+    }
+    let thinkHtml='';
+    if(think){
+      let sid='think-'+sessions.indexOf(s);
+      thinkHtml=`<div class="think-box" id="${sid}">
+        <div class="think-header" onclick="document.getElementById('${sid}').classList.toggle('open')">
+          <span>💭 思考过程</span><span style="font-size:9px">点击展开</span>
+        </div>
+        <div class="think-body">${think}</div>
+      </div>`;
+    }
     h+=`<div class="llm-session">
       <div class="meta"><span class="npc">${meta}</span></div>
       <div class="prompt">${s.prompt||''}</div>
-      <div class="response ${cls}">${resp}</div>
+      ${thinkHtml}
+      <div class="reply-box ${cls}">${reply}</div>
     </div>`;
   }
   document.getElementById('sessions').innerHTML=h||'No LLM sessions yet';
@@ -211,16 +373,41 @@ function renderState(s){
     let hpPct=Math.max(0,n.hp/n.hpMax*100),stPct=n.stamina/100*100;
     let status=n.dead?'DEAD':n.moving?'MOVING':'idle';
     let thinking=n.llmThinking;
-    let up=n.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join('<br>');
+    let up=n.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join(' &nbsp;');
+    // Goals
+    let goalsHtml='';
+    if(n.goals&&n.goals.length){
+      // Split by type
+      let long=n.goals.filter(g=>g.type==='long'&&!g.completed);
+      let short=n.goals.filter(g=>g.type==='short'&&!g.completed);
+      let done=n.goals.filter(g=>g.completed);
+      if(long.length||short.length||done.length){
+        goalsHtml='<div class="goals-title">🎯 目标</div>';
+        function renderGoal(g){
+          let icon=g.type==='long'?'★':'·';
+          let cls=g.type==='long'?'long':'short';
+          let mile=g.milestone?`<div class="g-milestone">→ ${g.milestone}</div>`:'';
+          return `<div class="goal-row ${cls}">
+            <span class="g-icon">${icon}</span><span class="g-desc">${g.desc}</span>
+            <span class="g-progress">${g.progress}%</span>
+            <div class="g-bar"><div style="width:${g.progress}%"></div></div>
+          </div>${mile}`;
+        }
+        if(long.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 长期目标</div>'+long.map(renderGoal).join('')+'</div>';
+        if(short.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 短期目标</div>'+short.map(renderGoal).join('')+'</div>';
+        if(done.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 已完成</div>'+done.map(renderGoal).join('')+'</div>';
+      }
+    }
     h+=`<div class="npc${thinking?' thinking':''}" data-id="${id}">
-      <h3>${n.name||id}<span class="think-badge"><span class="spinner-sm"></span>thinking</span></h3>
+      <h3>${n.name||id}<span class="think-badge"><span class="spinner-sm"></span>thinking</span><span class="persona">${n.personality||''}</span></h3>
       <div class="bar"><div class="lbl">HP</div><div class="fill"><div class="hp" style="width:${hpPct}%"></div></div><span style="font-size:10px">${n.hp}/${n.hpMax}</span></div>
       <div class="bar"><div class="lbl">SP</div><div class="fill"><div class="st" style="width:${stPct}%"></div></div><span style="font-size:10px">${n.stamina}</span></div>
-      <div class="info"><span>Gold:</span>${n.gold} <span>At:</span>${n.location} <span>${status}</span> <span>Cur:</span>${n.currentAction}</div>
-      <div class="upcoming">${up}</div>
+      <div class="info"><span>💰<b>${n.gold}</b></span> <span>📍<b>${n.location}</b></span> <span>${status}</span> <span style="color:#e94560">${n.currentAction}</span></div>
+      ${renderAttrs(n)}
+      ${goalsHtml}
+      <div class="upcoming">📋 ${up||'暂无日程'}</div>
       <div class="actions">
-        <button onclick="send({type:'semantic',npcId:'${id}'})">Detail</button>
-        <button onclick="send({type:'interact',npcId:'${id}'})">Interact</button>
+        <button onclick="send({type:'interact',npcId:'${id}'})">🤝 Interact</button>
       </div>
     </div>`;
   }

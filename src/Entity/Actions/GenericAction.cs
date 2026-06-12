@@ -67,6 +67,9 @@ namespace GameLoop
                 case "schedule":
                     ExecuteScheduleStep(step, ctx);
                     break;
+                case "emit_signal":
+                    ExecuteEmitSignal(step, ctx);
+                    break;
             }
         }
 
@@ -127,6 +130,13 @@ namespace GameLoop
                 Array.Empty<string>(),
                 BuildScheduleParams(step, ctx),
                 atTick: tick);
+        }
+
+        private void ExecuteEmitSignal(ActionStep step, ActionContext ctx)
+        {
+            var signal = step.Field ?? "";
+            var target = ResolveValue(step.Value, ctx)?.ToString() ?? "";
+            ctx.Attrs.Set("_signal", $"{signal}:{target}", "string", new[] { "meta" });
         }
 
         private Dictionary<string, object> BuildScheduleParams(ActionStep step, ActionContext ctx)

@@ -1,0 +1,34 @@
+{
+  "goals": [
+    {
+      "id": "become_captain",
+      "type": "LongTerm",
+      "desc": "晋升为卫兵队长",
+      "priority": 10,
+      "milestones": [
+        { "id": "patrol100", "desc": "完成100次巡逻", "conditionAttr": "patrol_count", "conditionOp": "gte", "conditionValue": 100 },
+        { "id": "defeat_enemy", "desc": "击败入侵者", "conditionAttr": "enemies_defeated", "conditionOp": "gte", "conditionValue": 10 },
+        { "id": "earn_trust", "desc": "获得城主信任", "conditionAttr": "lord_trust", "conditionOp": "gte", "conditionValue": 80 }
+      ]
+    },
+    {
+      "id": "protect_blacksmith",
+      "type": "ShortTerm",
+      "desc": "保护铁匠铺",
+      "priority": 5,
+      "targetEntity": "blacksmith",
+      "milestones": [
+        { "id": "check_smith", "desc": "巡查铁匠铺", "conditionAttr": "visited_smith", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    },
+    {
+      "id": "daily_patrol",
+      "type": "ShortTerm",
+      "desc": "完成日常巡逻",
+      "priority": 3,
+      "milestones": [
+        { "id": "patrol_done", "desc": "完成了巡逻", "conditionAttr": "patrolled_today", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    }
+  ]
+}

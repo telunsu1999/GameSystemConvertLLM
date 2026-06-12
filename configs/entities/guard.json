@@ -18,5 +18,6 @@
   ],
   "schedule": "configs/schedules/guard.json",
   "triggers": "configs/triggers/guard.json",
-  "actions": ["configs/actions/common.json", "configs/actions/guard.json"]
+  "actions": ["configs/actions/common.json", "configs/actions/guard.json"],
+  "goals": "configs/goals/guard.json"
 }

@@ -1,48 +1,12 @@
 {
   "rules": [
     {
-      "mode": "llm",
-      "conditions": [{"field":"hour","op":"eq","value":8}],
-      "action_type": "decide",
-      "description": "每日晨间规划",
-      "tags": ["daily","plan"]
-    },
-    {
       "mode": "direct",
       "conditions": [{"field":"dead","op":"eq","value":1}],
       "action_type": "play_anim",
       "params": {"anim":"death"},
       "description": "死亡倒地",
       "tags": ["combat","death"]
-    },
-    {
-      "mode": "direct",
-      "conditions": [{"field":"on_trap","op":"eq","value":1}],
-      "action_type": "take_damage",
-      "params": {"amount":30,"type":"physical"},
-      "description": "踩中陷阱受伤",
-      "tags": ["combat","trap"]
-    },
-    {
-      "mode": "llm",
-      "conditions": [{"field":"player_in_sight","op":"eq","value":1}],
-      "action_type": "react_to_player",
-      "description": "发现玩家",
-      "tags": ["social"]
-    },
-    {
-      "mode": "llm",
-      "conditions": [{"field":"enemy_visible","op":"eq","value":1}],
-      "action_type": "combat_decision",
-      "description": "发现敌人",
-      "tags": ["combat"]
-    },
-    {
-      "mode": "llm",
-      "conditions": [{"field":"hp","op":"lt","value":30}],
-      "action_type": "survival_decision",
-      "description": "生命值危险",
-      "tags": ["combat","emergency"]
     }
   ]
 }

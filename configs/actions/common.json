@@ -150,6 +150,31 @@
         {"type":"sub_attr", "field":"stamina", "value":6},
         {"type":"record_event", "event_type":"npc_trade_afternoon", "event_tags":["daily","trade"]}
       ]
+    },
+
+    "talk": {
+      "description": "与目标NPC交谈，了解对方",
+      "effect": "发送交谈信号",
+      "params": [
+        {"name":"target","type":"string","description":"交谈目标NPC的ID"}
+      ],
+      "steps": [
+        {"type":"emit_signal", "field":"talked_to", "value":"{params.target}"},
+        {"type":"record_event", "event_type":"npc_talk", "event_tags":["social"]}
+      ]
+    },
+    "give_gift": {
+      "description": "赠送礼物给目标NPC",
+      "effect": "消耗5金币，发送送礼信号",
+      "check": [{"field":"gold","op":"gte","value":5}],
+      "params": [
+        {"name":"target","type":"string","description":"送礼目标NPC的ID"}
+      ],
+      "steps": [
+        {"type":"sub_attr", "field":"gold", "value":5},
+        {"type":"emit_signal", "field":"gift_to", "value":"{params.target}"},
+        {"type":"record_event", "event_type":"npc_give_gift", "event_tags":["social"]}
+      ]
     }
   }
 }

@@ -22,7 +22,7 @@ namespace GameLoop
             _defaultTemperature = defaultTemperature;
         }
 
-        public async Task<string> SendAsync(string prompt, int? maxTokens = null, double? temperature = null)
+        public async Task<string> SendAsync(string prompt, int? maxTokens = null, double? temperature = null, bool enableThinking = false)
         {
             var request = new GenerateRequest
             {
@@ -30,7 +30,7 @@ namespace GameLoop
                 max_tokens = maxTokens ?? _defaultMaxTokens,
                 temperature = temperature ?? _defaultTemperature,
                 top_p = 0.9,
-                enable_thinking = true
+                enable_thinking = enableThinking
             };
 
             var json = JsonConvert.SerializeObject(request);

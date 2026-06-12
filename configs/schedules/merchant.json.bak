@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "action_type": "goto",   "tags": ["daily","work"],     "params": {"location":"商店"},  "at_hour": 6  },
+    { "action_type": "goto",   "tags": ["daily","rest"],     "params": {"location":"酒馆"},  "at_hour": 12 },
+    { "action_type": "goto",   "tags": ["daily","work"],     "params": {"location":"商店"},  "at_hour": 14 },
+    { "action_type": "goto",   "tags": ["daily","rest"],     "params": {"location":"家"},    "at_hour": 20 }
+  ]
+}

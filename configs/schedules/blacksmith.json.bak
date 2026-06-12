@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "action_type": "goto",   "tags": ["daily","work"],     "params": {"location":"铁匠铺"},  "at_hour": 6  },
+    { "action_type": "goto",   "tags": ["daily","rest"],     "params": {"location":"酒馆"},    "at_hour": 12 },
+    { "action_type": "goto",   "tags": ["daily","work"],     "params": {"location":"铁匠铺"},  "at_hour": 14 },
+    { "action_type": "social", "tags": ["daily","social"],   "params": {"activity":"dinner"},  "at_hour": 18 },
+    { "action_type": "goto",   "tags": ["daily","rest"],     "params": {"location":"家"},      "at_hour": 22 }
+  ]
+}

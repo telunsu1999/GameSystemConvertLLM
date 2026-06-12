@@ -26,6 +26,9 @@ namespace GameLoop
 
         [JsonProperty("actions")]
         public List<string> ActionPaths { get; set; } = new List<string>();
+
+        [JsonProperty("goals")]
+        public string GoalsPath { get; set; }
     }
 
     public class AttrDef

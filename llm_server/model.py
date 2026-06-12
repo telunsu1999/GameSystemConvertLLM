@@ -19,7 +19,7 @@ class ModelManager:
         self.tokenizer = None
         self.device = None
         self.is_quantized = False
-        self.model_name = "Qwen/Qwen3-0.6B"
+        self.model_name = "Qwen/Qwen3-4B"
 
     def detect_device(self) -> str:
         """Auto-detect available device. Returns 'cuda' or 'cpu'."""
@@ -28,7 +28,7 @@ class ModelManager:
             gpu_name = torch.cuda.get_device_name(0)
             print(f"[INFO] GPU detected: {gpu_name}")
             print(f"[INFO] CUDA version: {torch.version.cuda or 'unknown'}")
-            print(f"[INFO] VRAM: {torch.cuda.get_device_properties(0).total_mem / 1024**3:.1f} GB")
+            print(f"[INFO] VRAM: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
         else:
             self.device = "cpu"
             print("[INFO] No GPU detected, using CPU inference")
@@ -95,8 +95,10 @@ class ModelManager:
         temperature: float = 0.7,
         top_p: float = 0.9,
         enable_thinking: bool = False,
+        tools: list[dict] = None,
+        tool_choice: str = None,
     ) -> dict:
-        """Generate text from prompt. Returns dict with text and metadata."""
+        """Generate text from prompt. Supports function calling via tools/tool_choice."""
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model not loaded. Call load_model() first.")
 
@@ -105,11 +107,20 @@ class ModelManager:
             {"role": "user", "content": prompt},
         ]
 
+        # Build chat template kwargs
+        template_kwargs = {
+            "tokenize": False,
+            "add_generation_prompt": True,
+            "enable_thinking": enable_thinking,
+        }
+        if tools:
+            template_kwargs["tools"] = tools
+            # tool_choice default to "auto" if tools provided but not specified
+            template_kwargs["tool_choice"] = tool_choice or "auto"
+
         text = self.tokenizer.apply_chat_template(
             messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=enable_thinking,
+            **template_kwargs,
         )
 
         inputs = self.tokenizer([text], return_tensors="pt")

@@ -13,6 +13,7 @@
     <ProjectReference Include="..\Triggers\TriggerSystem.csproj" />
     <ProjectReference Include="..\Actions\ActionResolver.csproj" />
     <ProjectReference Include="..\Scheduler\Scheduler.csproj" />
+    <ProjectReference Include="..\Goals\GoalComponent.csproj" />
     <ProjectReference Include="..\..\System\Data\DataCollector.csproj" />
     <ProjectReference Include="..\..\System\Rules\SemanticEngine.csproj" />
     <ProjectReference Include="..\..\System\LLM\Client\LLMClient.csproj" />

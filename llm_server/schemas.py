@@ -1,5 +1,6 @@
 """Pydantic request and response schemas for the inference API."""
 
+from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 
@@ -27,6 +28,14 @@ class GenerateRequest(BaseModel):
     enable_thinking: bool = Field(
         default=False,
         description="Enable QWEN3 thinking/reasoning tags",
+    )
+    tools: Optional[list[dict[str, Any]]] = Field(
+        default=None,
+        description="OpenAI-format tool definitions for function calling",
+    )
+    tool_choice: Optional[str] = Field(
+        default=None,
+        description="Tool choice: 'auto', 'required', 'none', or specific tool name",
     )
 
 

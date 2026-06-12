@@ -1,0 +1,45 @@
+{
+  "goals": [
+    {
+      "id": "marry_merchant",
+      "type": "LongTerm",
+      "desc": "和老雷结婚",
+      "priority": 10,
+      "targetEntity": "merchant",
+      "milestones": [
+        { "id": "meet", "desc": "认识老雷", "source": "talked_to", "count": 1 },
+        { "id": "learn", "desc": "了解老雷的喜好", "source": "talked_to", "count": 3 },
+        { "id": "gift", "desc": "送礼物给老雷", "source": "gift_to", "count": 1 },
+        { "id": "propose", "desc": "向老雷求婚", "source": "propose_to", "count": 1 }
+      ]
+    },
+    {
+      "id": "save_gold",
+      "type": "LongTerm",
+      "desc": "攒够200金币开分店",
+      "priority": 5,
+      "milestones": [
+        { "id": "save100", "desc": "攒到100金币", "conditionAttr": "gold", "conditionOp": "gte", "conditionValue": 100 },
+        { "id": "save200", "desc": "攒到200金币", "conditionAttr": "gold", "conditionOp": "gte", "conditionValue": 200 }
+      ]
+    },
+    {
+      "id": "daily_work",
+      "type": "ShortTerm",
+      "desc": "完成今天的工作",
+      "priority": 3,
+      "milestones": [
+        { "id": "worked", "desc": "今天工作了", "conditionAttr": "worked_today", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    },
+    {
+      "id": "daily_social",
+      "type": "ShortTerm",
+      "desc": "去酒馆社交",
+      "priority": 2,
+      "milestones": [
+        { "id": "tavern_visit", "desc": "去了酒馆", "conditionAttr": "visited_tavern", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    }
+  ]
+}

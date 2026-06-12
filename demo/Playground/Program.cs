@@ -26,6 +26,14 @@ game.LoadEntities(Path.Combine(root, "configs", "entities"), root, llm);
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+
+// Clean shutdown: kill LLM process when Playground exits
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    Logger.Info("Playground", "Shutting down, stopping LLM...");
+    llmManager.Stop();
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseWebSockets();
@@ -52,8 +60,35 @@ async Task HandleSession(WebSocket ws, string root, GameLoop.GameLoop game, LLMM
             try { if (ws.State == WebSocketState.Open) _ = Send(ws, new { type = "attr_changed", entityId, key, value = val }); } catch { }
         }
         game.OnNpcAttrChanged += OnAttrChanged;
+        game.OnGoalProgressChanged += (entityId) =>
+        {
+            try { if (ws.State == WebSocketState.Open) _ = Send(ws, new
+            {
+                type = "goals_updated",
+                npcId = entityId,
+                tick = game.Clock.Tick,
+                goals = game.GetEntity(entityId)?.Get<GoalComponent>()?.Goals.Select(g => new
+                {
+                    id = g.Id, desc = g.Desc,
+                    type = g.Type == GoalType.LongTerm ? "long" : "short",
+                    progress = (int)(g.Progress * 100),
+                    milestone = g.CurrentMilestone?.Desc ?? "",
+                    milestoneDone = g.Milestones.Count(m => m.Done),
+                    milestoneTotal = g.Milestones.Count,
+                    completed = g.Completed,
+                    priority = g.Priority
+                }).ToList()
+            }); } catch { }
+        };
         game.OnPlanSession += (session) => {
-            try { if (ws.State == WebSocketState.Open) _ = Send(ws, new { 
+            try { if (ws.State == WebSocketState.Open) {
+                var entity = game.GetEntity(session.NpcId);
+                var upcoming = entity?.Get<Scheduler>()?.Upcoming(5)
+                    .Select(u => new { tick = u.TriggerTick, action = u.ActionType,
+                        detail = u.Params.ContainsKey("location") ? $"to {u.Params["location"]}" :
+                                 u.Params.ContainsKey("activity") ? u.Params["activity"].ToString() : "" })
+                    .ToList();
+                _ = Send(ws, new { 
                 type = "llm_done", 
                 npcId = session.NpcId, 
                 tick = session.Tick,
@@ -61,8 +96,9 @@ async Task HandleSession(WebSocket ws, string root, GameLoop.GameLoop game, LLMM
                 response = session.Response,
                 latency = session.Latency,
                 error = session.Error ? session.Response : null,
-                steps = session.Steps?.Select(s => new { tick = s.Tick, action = s.Action }).ToList()
-            }); } catch { }
+                steps = session.Steps?.Select(s => new { tick = s.Tick, action = s.Action }).ToList(),
+                upcoming = upcoming
+            }); } } catch { }
         };
         while (ws.State == WebSocketState.Open) {
             var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
@@ -119,6 +155,39 @@ async Task HandleMessage(WebSocket ws, string json, string root, GameLoop.GameLo
         case "start_llm": llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root); await SendLlmStatus(ws); break;
         case "stop_llm": llmManager.Stop(); await SendLlmStatus(ws); break;
         case "health": await SendLlmStatus(ws); break;
+        case "auto_tick":
+            var action = doc.RootElement.TryGetProperty("action", out var a) ? a.GetString() : "";
+            switch (action)
+            {
+                case "start":
+                    int interval = doc.RootElement.TryGetProperty("interval", out var iv) ? iv.GetInt32() : 2000;
+                    bool block = doc.RootElement.TryGetProperty("blockOnThinking", out var bt) && bt.GetBoolean();
+                    game.BlockOnLlmThinking = block;
+                    game.StartAutoTick(interval, state => {
+                        _ = Send(ws, new { type = "state", tick = state.Tick, season = state.Season,
+                            day = state.Day, timeBlock = state.TimeBlock, hour = state.Hour, npcs = state.Npcs });
+                    });
+                    await SendAutoTickState(ws, game);
+                    break;
+                case "stop":
+                    game.StopAutoTick();
+                    await SendAutoTickState(ws, game);
+                    break;
+                case "set_interval":
+                    interval = doc.RootElement.TryGetProperty("interval", out var iv2) ? iv2.GetInt32() : 2000;
+                    game.SetAutoTickInterval(interval);
+                    await SendAutoTickState(ws, game);
+                    break;
+                case "set_block":
+                    block = doc.RootElement.TryGetProperty("blockOnThinking", out var bt2) && bt2.GetBoolean();
+                    game.BlockOnLlmThinking = block;
+                    await SendAutoTickState(ws, game);
+                    break;
+                case "status":
+                    await SendAutoTickState(ws, game);
+                    break;
+            }
+            break;
     }
 }
 
@@ -183,6 +252,14 @@ async Task SendLlmStatus(WebSocket ws) {
     var online = llmManager.Status == LLMStatus.Online;
     var running = llmManager.Status == LLMStatus.Starting || llmManager.Status == LLMStatus.Online;
     await Send(ws, new { type = "llm_status", online, llmEnabled = game.LlmEnabled, running });
+}
+async Task SendAutoTickState(WebSocket ws, GameLoop.GameLoop game) {
+    await Send(ws, new {
+        type = "auto_tick_state",
+        running = game.AutoTickRunning,
+        interval = game.AutoTickIntervalMs,
+        blockOnThinking = game.BlockOnLlmThinking
+    });
 }
 
 static class RepoRoot { public static string Find() { var d = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory); while (d != null) { if (Directory.Exists(Path.Combine(d.FullName, "configs"))) return d.FullName; d = d.Parent; } throw new Exception("root not found"); } }

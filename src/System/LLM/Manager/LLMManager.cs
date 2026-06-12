@@ -91,12 +91,6 @@ namespace GameLoop
                     await Task.Delay(2000, token);
                     if (token.IsCancellationRequested) break;
 
-                    if (_process == null || _process.HasExited)
-                    {
-                        SetStatus(LLMStatus.Error);
-                        return;
-                    }
-
                     var online = await _client.HealthCheckAsync();
                     if (online)
                     {

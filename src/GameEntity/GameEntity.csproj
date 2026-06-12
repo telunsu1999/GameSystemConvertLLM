@@ -7,6 +7,7 @@
     <ProjectReference Include="..\Entity\Scheduler\Scheduler.csproj" />
     <ProjectReference Include="..\Entity\Triggers\TriggerSystem.csproj" />
     <ProjectReference Include="..\Entity\Actions\ActionResolver.csproj" />
+    <ProjectReference Include="..\Entity\Goals\GoalComponent.csproj" />
     <ProjectReference Include="..\System\Clock\WorldClock.csproj" />
     <ProjectReference Include="..\System\Log\Logger.csproj" />
   </ItemGroup>

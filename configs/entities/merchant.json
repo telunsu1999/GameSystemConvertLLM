@@ -18,5 +18,6 @@
   ],
   "schedule": "configs/schedules/merchant.json",
   "triggers": "configs/triggers/merchant.json",
-  "actions": ["configs/actions/common.json"]
+  "actions": ["configs/actions/common.json"],
+  "goals": "configs/goals/merchant.json"
 }

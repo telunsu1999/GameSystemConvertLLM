@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameLoop
@@ -15,18 +16,29 @@ namespace GameLoop
         private readonly WorldClock _clock;
         private readonly EventSystem _events;
         private readonly Dictionary<string, GameEntity> _entities = new Dictionary<string, GameEntity>();
+        private readonly object _autoTickLock = new object();
+        private Timer _autoTickTimer;
+        private Action<StateSnapshot> _autoTickCallback;
         private bool _llmEnabled;
 
         public WorldClock Clock => _clock;
         public EventSystem Events => _events;
         public IReadOnlyDictionary<string, GameEntity> Entities => _entities;
         public bool LlmEnabled { get => _llmEnabled; set => _llmEnabled = value; }
+
+        // --- Auto-tick state ---
+        public bool AutoTickRunning { get; private set; }
+        public int AutoTickIntervalMs { get; private set; } = 2000;
+        public bool BlockOnLlmThinking { get; set; } = false;
         
         /// <summary>Fires when any entity attribute changes. (entityId, key, value)</summary>
         public event Action<string, string, object> OnNpcAttrChanged;
         
         /// <summary>Fires when an LLM plan session completes (success or error).</summary>
         public event Action<LlmSession> OnPlanSession;
+        
+        /// <summary>Fires when any NPC goal milestone completes.</summary>
+        public event Action<string> OnGoalProgressChanged;
 
         public GameLoop(WorldClock clock, EventSystem events)
         {
@@ -54,6 +66,10 @@ namespace GameLoop
                 var entity = EntityFactory.CreateFromJson(file, rootDir);
                 entity.Add(new LlmPlanner(llmClient, rootDir, 
                     (session) => OnPlanSession?.Invoke(session)));
+                // Wire goal progress to event
+                var goals = entity.Get<GoalComponent>();
+                if (goals != null)
+                    goals.OnMilestoneCompleted += (g, m) => OnGoalProgressChanged?.Invoke(entity.Id);
                 AddEntity(entity);
             }
             Logger.Info("GameLoop", $"Loaded {_entities.Count} entities");
@@ -114,6 +130,58 @@ namespace GameLoop
             onStateChanged(BuildState());
         }
 
+        // ========== Auto-Tick ==========
+
+        /// <summary>Start automatic tick loop. Fires onStateChanged after each tick.</summary>
+        public void StartAutoTick(int intervalMs, Action<StateSnapshot> onStateChanged)
+        {
+            lock (_autoTickLock)
+            {
+                StopAutoTick();
+                AutoTickIntervalMs = intervalMs;
+                _autoTickCallback = onStateChanged;
+                AutoTickRunning = true;
+                _autoTickTimer = new Timer(_ =>
+                {
+                    if (!AutoTickRunning) return;
+                    // If blocking mode and any NPC is thinking, skip this tick
+                    if (BlockOnLlmThinking && AnyNpcThinking()) return;
+                    AdvanceTicks(1, _autoTickCallback);
+                }, null, 0, intervalMs);
+            }
+        }
+
+        /// <summary>Stop the auto-tick loop.</summary>
+        public void StopAutoTick()
+        {
+            lock (_autoTickLock)
+            {
+                AutoTickRunning = false;
+                _autoTickTimer?.Dispose();
+                _autoTickTimer = null;
+            }
+        }
+
+        /// <summary>Change auto-tick interval. Takes effect on next tick.</summary>
+        public void SetAutoTickInterval(int intervalMs)
+        {
+            AutoTickIntervalMs = intervalMs;
+            if (AutoTickRunning && _autoTickTimer != null)
+                _autoTickTimer.Change(0, intervalMs);
+        }
+
+        /// <summary>Check if any NPC currently has llm_thinking == 1.</summary>
+        public bool AnyNpcThinking()
+        {
+            foreach (var (_, entity) in _entities)
+            {
+                if (entity.Int("llm_thinking") == 1) return true;
+            }
+            return false;
+        }
+
+        // ==============================
+
         /// <summary>
         /// Player interaction with a specific entity.
         /// </summary>
@@ -159,13 +227,25 @@ namespace GameLoop
                     moving = entity.Int("moving"), dead = entity.Int("dead"),
                     ironOwned = entity.Int("iron_owned"), foodOwned = entity.Int("food_owned"),
                     personality = entity.Str("personality"),
+                    allAttrs = GameLoopHelpers.BuildAttrSnapshot(entity),
                     upcoming = entity.Get<Scheduler>()?.Upcoming(3).Select(u => new
                     {
                         tick = u.TriggerTick, action = u.ActionType,
                         detail = u.Params.ContainsKey("location") ? u.Params["location"].ToString() : ""
                     }).ToList(),
                     currentAction = entity.Get<ActionResolver>()?.Current?.ActionType ?? "idle",
-                    llmThinking = entity.Int("llm_thinking") == 1
+                    llmThinking = entity.Int("llm_thinking") == 1,
+                    goals = entity.Get<GoalComponent>()?.Goals.Select(g => new
+                    {
+                        id = g.Id, desc = g.Desc,
+                        type = g.Type == GoalType.LongTerm ? "long" : "short",
+                        progress = (int)(g.Progress * 100),
+                        milestone = g.CurrentMilestone?.Desc ?? "",
+                        milestoneDone = g.Milestones.Count(m => m.Done),
+                        milestoneTotal = g.Milestones.Count,
+                        completed = g.Completed,
+                        priority = g.Priority
+                    }).ToList()
                 };
             }
             return new StateSnapshot
@@ -181,5 +261,18 @@ namespace GameLoop
         public int Tick; public string Season; public int Day;
         public string TimeBlock; public int Hour;
         public Dictionary<string, object> Npcs = new Dictionary<string, object>();
+    }
+
+    internal static class GameLoopHelpers
+    {
+        public static Dictionary<string, object> BuildAttrSnapshot(GameEntity entity)
+        {
+            var result = new Dictionary<string, object>();
+            var attrs = entity.Get<Attributes>()?.Export();
+            if (attrs == null) return result;
+            foreach (var kv in attrs)
+                result[kv.Key] = new { v = kv.Value.Value, t = kv.Value.Tags };
+            return result;
+        }
     }
 }
