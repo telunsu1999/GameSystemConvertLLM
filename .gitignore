@@ -3,6 +3,24 @@
 __pycache__/
 *.pyc
 
+# .NET
+_build/
+bin/
+obj/
+*.user
+*.DotSettings
+
+# IDE
+.vs/
+.vscode/
+
+# Logs
+logs/
+
+# Env
+.env
+*.env.local
+
 # .NET build
 _build/
 bin/
