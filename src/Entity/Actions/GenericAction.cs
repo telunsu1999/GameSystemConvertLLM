@@ -116,10 +116,12 @@ namespace GameLoop
                 }
             }
 
-            ctx.Events.Record(
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
                 step.EventType ?? step.ActionType,
                 step.EventTags ?? Array.Empty<string>(),
-                data);
+                data,
+                ctx.Snap.Tick);
         }
 
         private void ExecuteScheduleStep(ActionStep step, ActionContext ctx)

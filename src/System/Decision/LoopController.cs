@@ -41,7 +41,7 @@ namespace GameLoop
                     var due = sched.Check(snap);
                     if (due.Count > 0)
                     {
-                        var records = _decisionManager.ProcessSchedule(due, attrs, null, sched, snap);
+                        var records = _decisionManager.ProcessSchedule(due, attrs, sched, snap);
                         result.Records.AddRange(records);
                     }
 
@@ -52,7 +52,7 @@ namespace GameLoop
                         if (triggerResult.DirectActions.Count > 0 || triggerResult.LlmOptions.Count > 0)
                         {
                             var records = await _decisionManager.ProcessAsync(
-                                npcId, triggerResult, attrs, null, sched, snap,
+                                npcId, triggerResult, attrs, sched, snap,
                                 collectConfig, "ignore");
                             result.Records.AddRange(records);
                         }
@@ -67,7 +67,7 @@ namespace GameLoop
                         var due = sched.Check(snap);
                         if (due.Count > 0)
                         {
-                            var records = _decisionManager.ProcessSchedule(due, null, null, sched, snap);
+                            var records = _decisionManager.ProcessSchedule(due, null, sched, snap);
                             result.Records.AddRange(records);
                         }
                     }
@@ -86,7 +86,7 @@ namespace GameLoop
             var triggerResult = triggers.Evaluate("attr", attrName, attrs);
             if (triggerResult.DirectActions.Count > 0 || triggerResult.LlmOptions.Count > 0)
             {
-                _ = _decisionManager.ProcessAsync(npcId, triggerResult, attrs, null, scheduler, snap,
+                _ = _decisionManager.ProcessAsync(npcId, triggerResult, attrs, scheduler, snap,
                     collectConfig, "ignore");
             }
         }

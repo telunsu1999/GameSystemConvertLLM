@@ -60,6 +60,27 @@ namespace GameLoop
             resolver.Register(new TakeDamageAction());
             resolver.Register(new TradeAction());
 
+            // Add RecordModule (per-entity memory, always present)
+            entity.Add(new RecordModule());
+
+            // Add RelationModule + load relations
+            if (!string.IsNullOrEmpty(config.RelationsPath))
+            {
+                var rel = entity.Add(new RelationModule());
+                var relPath = ResolvePath(config.RelationsPath, rootDir);
+                if (File.Exists(relPath))
+                {
+                    var relJson = File.ReadAllText(relPath);
+                    var relConfig = JsonConvert.DeserializeObject<RelationConfig>(relJson);
+                    if (relConfig?.Outward != null)
+                        foreach (var r in relConfig.Outward)
+                            rel.Set(r.Target, r.Type, r.Value, r.Tags);
+                    if (relConfig?.Perceived != null)
+                        foreach (var p in relConfig.Perceived)
+                            rel.PerceiveFrom(p.Source, p.Type, p.Value, p.Confidence, p.Via, 0);
+                }
+            }
+
             // Add GoalComponent + load goals
             if (!string.IsNullOrEmpty(config.GoalsPath))
             {
@@ -95,6 +116,40 @@ namespace GameLoop
             if (Path.IsPathRooted(path)) return path;
             return Path.Combine(rootDir, path);
         }
+    }
+
+    internal class RelationConfig
+    {
+        [JsonProperty("outward")]
+        public List<RelationDef> Outward { get; set; } = new List<RelationDef>();
+        [JsonProperty("perceived")]
+        public List<PerceivedDef> Perceived { get; set; } = new List<PerceivedDef>();
+    }
+
+    internal class RelationDef
+    {
+        [JsonProperty("target")]
+        public string Target { get; set; } = "";
+        [JsonProperty("type")]
+        public string Type { get; set; } = "";
+        [JsonProperty("value")]
+        public float Value { get; set; }
+        [JsonProperty("tags")]
+        public List<string> Tags { get; set; } = new List<string>();
+    }
+
+    internal class PerceivedDef
+    {
+        [JsonProperty("source")]
+        public string Source { get; set; } = "";
+        [JsonProperty("type")]
+        public string Type { get; set; } = "";
+        [JsonProperty("value")]
+        public float Value { get; set; }
+        [JsonProperty("confidence")]
+        public float Confidence { get; set; } = 0.5f;
+        [JsonProperty("via")]
+        public string Via { get; set; } = "initial";
     }
 
     internal class GoalConfig

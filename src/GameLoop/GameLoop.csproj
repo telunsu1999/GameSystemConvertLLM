@@ -11,7 +11,6 @@
     <ProjectReference Include="..\Entity\Triggers\TriggerSystem.csproj" />
     <ProjectReference Include="..\Entity\Actions\ActionResolver.csproj" />
     <ProjectReference Include="..\System\Clock\WorldClock.csproj" />
-    <ProjectReference Include="..\System\Events\EventSystem.csproj" />
     <ProjectReference Include="..\System\Log\Logger.csproj" />
     <ProjectReference Include="..\Entity\LlmPlanner\LlmPlanner.csproj" />
     <ProjectReference Include="..\System\LLM\Client\LLMClient.csproj" />

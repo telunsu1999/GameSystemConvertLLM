@@ -29,7 +29,7 @@ class Program
     }
 
     static Attributes Attrs => new Attributes();
-    static EventSystem Events => new EventSystem();
+    static RecordModule Records => new RecordModule();
     static Scheduler Sched => new Scheduler();
     static TickSnapshot Snap => new TickSnapshot { Tick = 100 };
 
@@ -40,9 +40,9 @@ class Program
         var ar = new ActionResolver();
         ar.LoadMapping(Path.Combine(root, "configs", "actions", "guard.json"));
 
-        var ctx = new ActionContext { Attrs = Attrs, Events = Events, Scheduler = Sched, Snap = Snap, Params = new Dictionary<string, object>() };
+        var ctx = new ActionContext { Attrs = Attrs, Records = Records, Scheduler = Sched, Snap = Snap, Params = new Dictionary<string, object>() };
         var item = new ActionItem { ActionType = "ignore", Params = new Dictionary<string, object>() };
-        var result = ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        var result = ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
         Assert(result.Completed, "ignore completed");
     }
 
@@ -54,10 +54,10 @@ class Program
         ar.LoadMapping(Path.Combine(root, "configs", "actions", "guard.json"));
 
         var attrs = Attrs;
-        var events = Events;
-        var ctx = new ActionContext { Attrs = attrs, Events = events, Scheduler = Sched, Snap = Snap, Params = new Dictionary<string, object>() };
+        var records = Records;
+        var ctx = new ActionContext { Attrs = attrs, Records = records, Scheduler = Sched, Snap = Snap, Params = new Dictionary<string, object>() };
         var item = new ActionItem { ActionType = "alert", Params = new Dictionary<string, object>() };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         var alert = attrs.Get("alert_state");
         Assert(alert != null, "alert_state set");
@@ -78,10 +78,10 @@ class Program
         ar.Register(new GenericAction("go", mapping));
 
         var attrs = Attrs;
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
         var item = new ActionItem { ActionType = "go", Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         var target = attrs.Get("target");
         Assert(target.Value.ToString() == "闁版帡顩?, "template resolved");
@@ -96,12 +96,12 @@ class Program
 
         var attrs = Attrs;
         attrs.Set("location", "闁句礁灏冮柧?, "string", new string[0]);
-        var events = Events;
+        var records = Records;
         var sched = Sched;
-        var ctx = new ActionContext { Attrs = attrs, Events = events, Scheduler = sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = records, Scheduler = sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
         var item = new ActionItem { ActionType = "goto", Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         var moving = attrs.Get("moving");
         Assert(Convert.ToInt64(moving.Value) == 1, "moving=1");
@@ -120,10 +120,10 @@ class Program
 
         var attrs = Attrs;
         attrs.Set("moving", 1, "number", new[]{"travel"});
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object>() };
         var item = new ActionItem { ActionType = "arrive", Params = new Dictionary<string, object>() };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         Assert(attrv(attrs, "location") == "闁版帡顩?, "location updated");
         Assert(Convert.ToInt64(attrs.Get("moving").Value) == 0, "moving=0");
@@ -138,10 +138,10 @@ class Program
 
         var attrs = Attrs;
         attrs.Set("hp", 100, "number", new[]{"hp"});
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "amount", 30 } } };
         var item = new ActionItem { ActionType = "take_damage", Params = new Dictionary<string, object> { { "amount", 30 } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         Assert(attrv(attrs, "hp") == "70", "hp=70 after 30 damage");
         Assert(attrs.Get("dead") == null, "not dead");
@@ -155,10 +155,10 @@ class Program
 
         var attrs = Attrs;
         attrs.Set("hp", 20, "number", new[]{"hp"});
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "amount", 30 } } };
         var item = new ActionItem { ActionType = "take_damage", Params = new Dictionary<string, object> { { "amount", 30 } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         Assert(Convert.ToInt64(attrs.Get("dead").Value) == 1, "dead=1 after fatal damage");
     }
@@ -172,13 +172,13 @@ class Program
 
         var attrs = Attrs;
         attrs.Set("moving", 1, "number", new[]{"travel"});
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
         var item = new ActionItem { ActionType = "goto", Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         // Interrupt
-        ar.Interrupt(attrs, Events, Sched, Snap);
+        ar.Interrupt(attrs, Sched, Snap, Records);
         Assert(Convert.ToInt64(attrs.Get("moving").Value) == 0, "moving=0 after interrupt");
     }
 
@@ -192,10 +192,10 @@ class Program
         Assert(ar.Current == null, "null when idle");
 
         var attrs = Attrs;
-        var ctx = new ActionContext { Attrs = attrs, Events = Events, Scheduler = Sched, Snap = Snap,
+        var ctx = new ActionContext { Attrs = attrs, Records = Records, Scheduler = Sched, Snap = Snap,
             Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
         var item = new ActionItem { ActionType = "goto", Params = new Dictionary<string, object> { { "location", "闁版帡顩? } } };
-        ar.Execute(item, ctx.Attrs, ctx.Events, ctx.Scheduler, ctx.Snap);
+        ar.Execute(item, ctx.Attrs, ctx.Scheduler, ctx.Snap, ctx.Records);
 
         // GotoAction yields child actions, so _current stays set
         var cur = ar.Current;

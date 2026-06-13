@@ -1,0 +1,8 @@
+{
+  "outward": [
+    { "target": "blacksmith", "type": "trust", "value": 30, "tags": ["business"] }
+  ],
+  "perceived": [
+    { "source": "blacksmith", "type": "felt_interest", "value": 60, "confidence": 0.5, "via": "gift_received" }
+  ]
+}

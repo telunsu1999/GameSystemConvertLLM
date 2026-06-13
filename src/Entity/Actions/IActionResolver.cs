@@ -7,8 +7,8 @@ namespace GameLoop
         CurrentAction Current { get; }
         void LoadMapping(string jsonPath);
         void Register(IAction action);
-        ExecuteResult Execute(ActionItem item, Attributes attrs, EventSystem events, Scheduler scheduler, TickSnapshot snap);
-        void Interrupt(Attributes attrs, EventSystem events, Scheduler scheduler, TickSnapshot snap);
+        ExecuteResult Execute(ActionItem item, Attributes attrs, Scheduler scheduler, TickSnapshot snap, RecordModule records = null);
+        void Interrupt(Attributes attrs, Scheduler scheduler, TickSnapshot snap);
         List<ActionSchema> GetAvailableActions();
     }
 

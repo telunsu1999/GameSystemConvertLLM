@@ -13,13 +13,13 @@ class Program
         Console.WriteLine("=== DataCollector Tests ===\n");
 
         var attrs = new Attributes();
-        var events = new EventSystem();
+        var records = new RecordModule();
         var semantic = new SemanticEngine();
         var repoRoot = FindRepoRoot();
         var configDir = Path.Combine(repoRoot, "configs", "collect");
         var rulesDir = Path.Combine(repoRoot, "configs", "semantic");
 
-        var dc = new DataCollector.DataCollector(attrs, events, semantic, configDir, rulesDir);
+        var dc = new DataCollector.DataCollector(attrs, records, semantic, configDir, rulesDir);
 
         // Setup data
         attrs.Set("currentHP", 45, "number", new[]{"vital","hp","combat"});
@@ -31,10 +31,9 @@ class Program
         attrs.Set("weapon_durability", 45, "number", new[]{"equip"});
         attrs.Set("weapon_max", 100, "number", new[]{"equip"});
 
-        var evtId = events.Record("death", new[]{"mine","danger"}, new Dictionary<string,object>{{"who","閻灝浼?},{"where","閻寧绀?}});
-        events.Perceive(evtId, "adventurer", "rumor");
-        events.Record("treasure_found", new[]{"treasure"}, new Dictionary<string,object>{{"item","閸欍倛鈧胶娈戦幎銈堥煩缁?}});
-        events.Perceive(evtId, "adventurer", "witnessed");
+        records.Remember(new RecordSource{Method="self"}, "death", new[]{"mine","danger"}, new Dictionary<string,object>{{"who","閻灝浼?},{"where","閻寧绀?}}, 0);
+        records.Remember(new RecordSource{Method="rumor",FromNpcId="adventurer"}, "death", new[]{"mine","danger"}, new Dictionary<string,object>{{"who","閻灝浼?},{"where","閻寧绀?}}, 0);
+        records.Remember(new RecordSource{Method="self"}, "treasure_found", new[]{"treasure"}, new Dictionary<string,object>{{"item","閸欍倛鈧胶娈戦幎銈堥煩缁?}}, 0);
 
         // CollectRaw
         var raw = dc.CollectRaw("adventurer", new CollectConfig{

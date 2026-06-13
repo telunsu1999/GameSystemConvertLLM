@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\System\Data\DataCollector.csproj" />
-    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

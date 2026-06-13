@@ -4,7 +4,6 @@
     <ProjectReference Include="..\..\src\System\Rules\SemanticEngine.csproj" />
     <ProjectReference Include="..\..\src\System\Data\DataCollector.csproj" />
     <ProjectReference Include="..\..\src\Entity\Attributes\Attributes.csproj" />
-    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
     <ProjectReference Include="..\..\src\System\Prompt\PromptTemplate.csproj" />
   </ItemGroup>
 

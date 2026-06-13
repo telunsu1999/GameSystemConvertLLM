@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\attribute_module\AttributeModule\AttributeModule.csproj" />
     <ProjectReference Include="..\..\data_collector\System\Data\DataCollector.csproj" />
-    <ProjectReference Include="..\..\event_system\System\Events\EventSystem.csproj" />
     <ProjectReference Include="..\..\prompt_template\System\Prompt\PromptTemplate.csproj" />
     <ProjectReference Include="..\..\semantic_engine\System\Rules\SemanticEngine.csproj" />
   </ItemGroup>

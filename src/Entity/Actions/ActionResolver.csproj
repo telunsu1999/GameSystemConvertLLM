@@ -5,7 +5,7 @@
     <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
     <ProjectReference Include="..\Attributes\Attributes.csproj" />
     <ProjectReference Include="..\Triggers\TriggerSystem.csproj" />
-    <ProjectReference Include="..\..\System\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\Records\RecordModule.csproj" />
     <ProjectReference Include="..\Scheduler\Scheduler.csproj" />
     <ProjectReference Include="..\..\System\Log\Logger.csproj" />
   </ItemGroup>

@@ -40,3 +40,6 @@ Desktop.ini
 
 # LLM models
 models/
+
+# HuggingFace model cache
+.hf_cache/

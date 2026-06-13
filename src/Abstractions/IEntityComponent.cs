@@ -18,7 +18,6 @@ namespace GameLoop
         public int Day;
         public string Season;
         public string TimeBlock;
-        public object Events;
         public bool LlmEnabled;
     }
 }

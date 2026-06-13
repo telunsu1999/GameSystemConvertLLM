@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>GameLoop</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
+    <ProjectReference Include="..\..\System\Log\Logger.csproj" />
+  </ItemGroup>
+</Project>

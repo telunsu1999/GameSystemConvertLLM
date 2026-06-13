@@ -32,18 +32,18 @@ namespace GameLoop
 
         public async Task<List<DecisionRecord>> ProcessAsync(
             string npcId, TriggerResult triggerResult, Attributes attrs,
-            EventSystem events, Scheduler scheduler, TickSnapshot snap,
+            Scheduler scheduler, TickSnapshot snap,
             string collectConfig = null, string fallbackActionType = null)
         {
             var records = new List<DecisionRecord>();
 
             foreach (var rule in triggerResult.DirectActions)
-                ExecuteDirect(rule, attrs, events, scheduler, snap, records);
+                ExecuteDirect(rule, attrs, scheduler, snap, records);
 
             if (triggerResult.LlmOptions.Count > 0)
             {
                 var record = await ProcessLlmOptionsAsync(npcId, triggerResult.LlmOptions,
-                    attrs, events, scheduler, snap, collectConfig, fallbackActionType);
+                    attrs, scheduler, snap, collectConfig, fallbackActionType);
                 if (record != null) records.Add(record);
             }
 
@@ -52,37 +52,37 @@ namespace GameLoop
         }
 
         public List<DecisionRecord> ProcessSchedule(List<ScheduleItem> dueItems,
-            Attributes attrs, EventSystem events, Scheduler scheduler, TickSnapshot snap)
+            Attributes attrs, Scheduler scheduler, TickSnapshot snap)
         {
             var records = new List<DecisionRecord>();
             foreach (var item in dueItems)
-                ExecuteDirect(item, attrs, events, scheduler, snap, records);
+                ExecuteDirect(item, attrs, scheduler, snap, records);
             _history.AddRange(records);
             return records;
         }
 
         private void ExecuteDirect(TriggerRule rule, Attributes attrs,
-            EventSystem events, Scheduler scheduler, TickSnapshot snap, List<DecisionRecord> records)
+            Scheduler scheduler, TickSnapshot snap, List<DecisionRecord> records)
         {
             _resolver.Execute(new ActionItem { ActionType = rule.ActionType,
-                Params = rule.Params ?? new Dictionary<string, object>() }, attrs, events, scheduler, snap);
+                Params = rule.Params ?? new Dictionary<string, object>() }, attrs, scheduler, snap);
             records.Add(new DecisionRecord { Source = "trigger:direct", ActionType = rule.ActionType, Method = "direct", Tick = snap.Tick });
         }
 
         private void ExecuteDirect(ScheduleItem item, Attributes attrs,
-            EventSystem events, Scheduler scheduler, TickSnapshot snap, List<DecisionRecord> records)
+            Scheduler scheduler, TickSnapshot snap, List<DecisionRecord> records)
         {
             _resolver.Execute(new ActionItem { ActionType = item.ActionType,
-                Params = item.Params ?? new Dictionary<string, object>() }, attrs, events, scheduler, snap);
+                Params = item.Params ?? new Dictionary<string, object>() }, attrs, scheduler, snap);
             records.Add(new DecisionRecord { Source = "scheduler", ActionType = item.ActionType, Method = "direct", Tick = snap.Tick });
         }
 
         private async Task<DecisionRecord> ProcessLlmOptionsAsync(string npcId, List<TriggerRule> options,
-            Attributes attrs, EventSystem events, Scheduler scheduler,
+            Attributes attrs, Scheduler scheduler,
             TickSnapshot snap, string collectConfig, string fallbackActionType)
         {
             var collected = _collector.Collect(npcId, collectConfig ?? "default");
-            if (collected == null) return RunFallback(fallbackActionType, attrs, events, scheduler, snap);
+            if (collected == null) return RunFallback(fallbackActionType, attrs, scheduler, snap);
 
             var optionTexts = new List<string>();
             for (int i = 0; i < options.Count; i++)
@@ -101,27 +101,27 @@ namespace GameLoop
                 catch
                 {
                     if (attempt == _maxRetries)
-                        return RunFallback(fallbackActionType, attrs, events, scheduler, snap);
+                        return RunFallback(fallbackActionType, attrs, scheduler, snap);
                     await Task.Delay(_retryDelayMs * (attempt + 1));
                 }
             }
 
             if (response == null || !TryParseChoice(response, options.Count, out int idx))
-                return RunFallback(fallbackActionType, attrs, events, scheduler, snap);
+                return RunFallback(fallbackActionType, attrs, scheduler, snap);
 
             var chosen = options[idx];
             _resolver.Execute(new ActionItem { ActionType = chosen.ActionType,
-                Params = chosen.Params ?? new Dictionary<string, object>() }, attrs, events, scheduler, snap);
+                Params = chosen.Params ?? new Dictionary<string, object>() }, attrs, scheduler, snap);
 
             return new DecisionRecord { Source = "trigger:llm", ActionType = chosen.ActionType, Method = "llm", LlmResponse = response, Tick = snap.Tick };
         }
 
         private DecisionRecord RunFallback(string fallbackActionType, Attributes attrs,
-            EventSystem events, Scheduler scheduler, TickSnapshot snap)
+            Scheduler scheduler, TickSnapshot snap)
         {
             if (string.IsNullOrEmpty(fallbackActionType)) return null;
             try { _resolver.Execute(new ActionItem { ActionType = fallbackActionType,
-                Params = new Dictionary<string, object>() }, attrs, events, scheduler, snap); } catch { }
+                Params = new Dictionary<string, object>() }, attrs, scheduler, snap); } catch { }
             return new DecisionRecord { Source = "fallback", ActionType = fallbackActionType, Method = "fallback", Tick = snap.Tick };
         }
 

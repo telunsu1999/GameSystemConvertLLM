@@ -56,19 +56,20 @@ namespace GameLoop
             attrs.Set("llm_thinking", 1, "number", new[] { "meta" });
             Logger.Info("LLM", $"Plan started: {entity.Id}", new { context, tick = capturedTick });
 
-            _ = RunPlanAsync(entity, attrs, resolver, sched, ctx.Events as EventSystem,
+            _ = RunPlanAsync(entity, attrs, resolver, sched,
                 context, capturedTick, capturedHour, capturedSeason, capturedDay, capturedBlock);
         }
 
         private async Task RunPlanAsync(GameEntity entity, Attributes attrs, ActionResolver resolver,
-            Scheduler sched, EventSystem events, string context,
+            Scheduler sched, string context,
             int tick, int hour, string season, int day, string block)
         {
             try
             {
-                // Collect semantic data
+                // Collect semantic data from entity's own RecordModule
+                var records = entity.Get<RecordModule>();
                 var semantic = new SemanticEngine();
-                var collector = new DataCollector(attrs, events, semantic,
+                var collector = new DataCollector(attrs, records, semantic,
                     System.IO.Path.Combine(_rootDir, "configs", "collect"),
                     System.IO.Path.Combine(_rootDir, "configs", "semantic"));
                 var collected = collector.Collect(entity.Id, new CollectConfig
@@ -79,11 +80,15 @@ namespace GameLoop
                     EventDays = 7, EventLimit = 5
                 });
 
-                // Build prompt
+                // Build system prompt (identity only) and user prompt (state+goals)
                 var actions = resolver.GetAvailableActions();
+
+                // --- System: short identity + output instruction ---
+                var sysPrompt = $"你是{entity.Str("name")}，一个{entity.Str("personality")}。你必须通过调用函数来制定计划。";
+
+                // --- User: dynamic state + goals ---
                 var sb = new StringBuilder();
-                sb.AppendLine($"You are {entity.Str("name")}, personality: {entity.Str("personality")}");
-                sb.AppendLine($"Current: {season} D{day} {block} H{hour}");
+                sb.AppendLine($"当前时间: {season} D{day} {block} H{hour}");
                 sb.AppendLine();
                 foreach (var t in collected.SemanticTexts) sb.AppendLine($"- {t}");
                 sb.AppendLine();
@@ -97,59 +102,125 @@ namespace GameLoop
                         sb.AppendLine(goalCtx);
                 }
 
-                sb.AppendLine($"It is {context}, make a plan aligned with your goals for the next few hours.");
-                sb.AppendLine();
-                sb.AppendLine("Available actions:");
+                sb.AppendLine($"当前是{context}，请制定接下来几小时的日程计划。");
+                var userPrompt = sb.ToString();
+
+                // --- Tools: actions as function definitions ---
+                var tools = new List<object>();
                 for (int i = 0; i < actions.Count; i++)
                 {
                     var a = actions[i];
-                    sb.Append($"  {a.ActionType}");
+                    var func = new Dictionary<string, object>
+                    {
+                        ["name"] = a.ActionType,
+                        ["description"] = $"{a.Description}。效果: {a.Effect}",
+                    };
                     if (a.Params.Count > 0)
-                        sb.Append($"({string.Join(",", a.Params.Select(p => $"{p.Name}:{p.Type}"))})");
-                    sb.AppendLine($" - {a.Description} -> {a.Effect}");
+                    {
+                        var props = new Dictionary<string, object>();
+                        var required = new List<string>();
+                        foreach (var p in a.Params)
+                        {
+                            props[p.Name] = new Dictionary<string, object>
+                            {
+                                ["type"] = p.Type switch { "number" => "integer", _ => "string" },
+                                ["description"] = p.Name,
+                            };
+                            required.Add(p.Name);
+                        }
+                        func["parameters"] = new Dictionary<string, object>
+                        {
+                            ["type"] = "object",
+                            ["properties"] = props,
+                            ["required"] = required,
+                        };
+                    }
+                    tools.Add(new Dictionary<string, object> { ["type"] = "function", ["function"] = func });
                 }
-                sb.AppendLine();
-                sb.AppendLine("Output a JSON plan (each step 1 hour apart):");
-                sb.AppendLine("{\"plan\":[{\"action\":\"eat\"},{\"action\":\"work\",\"params\":{\"income\":10}}]}");
-                sb.AppendLine("Only output JSON.");
-                var prompt = sb.ToString();
 
-                // Call LLM asynchronously
+                // Call LLM with tools (no thinking needed for 4B)
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var response = await _client.SendAsync(prompt, maxTokens: 1024, enableThinking: true);
+                var rawResponse = await _client.SendWithToolsAsync(
+                    sysPrompt, userPrompt, tools,
+                    maxTokens: 1024, enableThinking: false);
                 sw.Stop();
+
+                // --- Parse response: try tool_call XML first, then JSON plan ---
+                var response = rawResponse.Trim();
                 Logger.Info("LLM", $"Plan response: {entity.Id}",
-                    new { response = response.Trim(), latencyMs = sw.ElapsedMilliseconds });
+                    new { response = response, latencyMs = sw.ElapsedMilliseconds });
 
-                // Parse JSON plan
-                var clean = System.Text.RegularExpressions.Regex.Replace(response, "<think>.*?</think>", "",
-                    System.Text.RegularExpressions.RegexOptions.Singleline).Trim();
-                var jsonMatch = System.Text.RegularExpressions.Regex.Match(clean, @"\{[\s\S]*""plan""[\s\S]*\}");
-                if (!jsonMatch.Success) { Logger.Warn("LLM", $"Plan parse failed: {entity.Id}"); return; }
+                var planSteps = new List<(string action, Dictionary<string, object> pars)>();
 
-                var plan = JsonSerializer.Deserialize<LlmPlan>(jsonMatch.Value,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                if (plan?.Plan == null || plan.Plan.Count == 0) return;
+                // Parse <function=NAME>...</function> from tool_call output
+                var toolCalls = System.Text.RegularExpressions.Regex.Matches(
+                    response, @"<function=([^>]+)>(.*?)</function>",
+                    System.Text.RegularExpressions.RegexOptions.Singleline);
 
-                for (int i = 0; i < plan.Plan.Count; i++)
+                if (toolCalls.Count > 0)
                 {
-                    var step = plan.Plan[i];
+                    foreach (System.Text.RegularExpressions.Match tc in toolCalls)
+                    {
+                        var actionName = tc.Groups[1].Value.Trim();
+                        var inner = tc.Groups[2].Value;
+                        var pars = new Dictionary<string, object>();
+                        var paramMatches = System.Text.RegularExpressions.Regex.Matches(
+                            inner, @"<parameter=([^>]+)>\s*(.*?)\s*</parameter>",
+                            System.Text.RegularExpressions.RegexOptions.Singleline);
+                        foreach (System.Text.RegularExpressions.Match pm in paramMatches)
+                        {
+                            var pname = pm.Groups[1].Value.Trim();
+                            var pval = pm.Groups[2].Value.Trim();
+                            pars[pname] = int.TryParse(pval, out var iv) ? (object)iv : pval;
+                        }
+                        planSteps.Add((actionName, pars));
+                    }
+                }
+
+                // Fallback: parse JSON {"plan":[...]} format
+                if (planSteps.Count == 0)
+                {
+                    var clean = System.Text.RegularExpressions.Regex.Replace(
+                        response, "<think>.*?</think>", "",
+                        System.Text.RegularExpressions.RegexOptions.Singleline).Trim();
+                    var jsonMatch = System.Text.RegularExpressions.Regex.Match(
+                        clean, @"\{[\s\S]*""plan""[\s\S]*\}");
+                    if (jsonMatch.Success)
+                    {
+                        var plan = JsonSerializer.Deserialize<LlmPlan>(jsonMatch.Value,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (plan?.Plan != null)
+                        {
+                            foreach (var s in plan.Plan)
+                                planSteps.Add((s.Action, s.Params ?? new Dictionary<string, object>()));
+                        }
+                    }
+                }
+
+                if (planSteps.Count == 0)
+                {
+                    Logger.Warn("LLM", $"Plan parse failed: {entity.Id}", new { response });
+                    return;
+                }
+
+                for (int i = 0; i < planSteps.Count; i++)
+                {
+                    var (action, pars) = planSteps[i];
                     var atTick = tick + (i + 1) * 6;
-                    sched.Add(step.Action, new[] { "llm_plan" },
-                        step.Params ?? new Dictionary<string, object>(), atTick: atTick);
+                    sched.Add(action, new[] { "llm_plan" }, pars, atTick: atTick);
                 }
                 Logger.Info("LLM", $"Plan scheduled: {entity.Id}",
-                    new { steps = plan.Plan.Select((s, i) => $"T{tick + (i + 1) * 6}:{s.Action}").ToList() });
+                    new { steps = planSteps.Select((s, i) => $"T{tick + (i + 1) * 6}:{s.action}").ToList() });
 
                 _onSession?.Invoke(new LlmSession
                 {
                     NpcId = entity.Id,
                     Tick = tick,
-                    Prompt = prompt,
-                    Response = response.Trim(),
+                    Prompt = $"[system] {sysPrompt}\n[user] {userPrompt}",
+                    Response = rawResponse.Trim(),
                     Latency = (int)sw.ElapsedMilliseconds,
-                    Steps = plan.Plan.Select((s, i) => new LlmPlanResult
-                        { Tick = tick + (i + 1) * 6, Action = s.Action }).ToList()
+                    Steps = planSteps.Select((s, i) => new LlmPlanResult
+                        { Tick = tick + (i + 1) * 6, Action = s.action }).ToList()
                 });
             }
             catch (Exception ex)

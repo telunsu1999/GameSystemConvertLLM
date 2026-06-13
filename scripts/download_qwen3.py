@@ -1,25 +1,53 @@
 """
-Download QWEN3-0.6B model from HuggingFace with progress display.
+Download Qwen3.5-0.8B model from HuggingFace with progress display.
 Supports resume (auto-detects already-downloaded files).
 
 Usage:
-  python scripts/download_model.py
-  python scripts/download_model.py --force  (re-download all files)
+  python scripts/download_qwen3.py
+  python scripts/download_qwen3.py --force  (re-download all files)
 """
 
 import os
+import json
 import sys
 import time
 from pathlib import Path
 
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
+# --- Set cache dir from configs/server.json ---
+def _find_repo_root() -> Path:
+    current = Path(__file__).resolve().parent
+    for _ in range(5):
+        if (current / "configs" / "server.json").exists():
+            return current
+        current = current.parent
+    return Path(__file__).resolve().parent.parent
+
+_repo_root = _find_repo_root()
+_config_path = _repo_root / "configs" / "server.json"
+if _config_path.exists():
+    with open(_config_path, "r", encoding="utf-8") as f:
+        _config = json.load(f)
+    _cache_dir = _config.get("model_cache_dir", ".hf_cache")
+else:
+    _cache_dir = ".hf_cache"
+
+_cache_path = Path(_cache_dir)
+if not _cache_path.is_absolute():
+    _cache_path = _repo_root / _cache_path
+_cache_path = str(_cache_path.resolve())
+
+if "HF_HOME" not in os.environ:
+    os.environ["HF_HOME"] = _cache_path
+print(f"[CACHE] Model will be saved to: {_cache_path}")
+
 from huggingface_hub import snapshot_download, hf_hub_download
 from huggingface_hub.utils import tqdm as hf_tqdm
 from huggingface_hub import get_hf_file_metadata
 
 
-MODEL_NAME = "Qwen/Qwen3-0.6B"
+MODEL_NAME = "Qwen/Qwen3.5-4B"
 
 MODEL_FILES = [
     "model.safetensors",
@@ -66,7 +94,7 @@ def main():
     force = "--force" in sys.argv
 
     print("=" * 55)
-    print(f"  QWEN3-0.6B Model Download")
+    print(f"  Qwen3.5-4B Model Download")
     print(f"  Model: {MODEL_NAME}")
     print("=" * 55)
     print()

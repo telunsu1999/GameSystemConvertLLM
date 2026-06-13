@@ -54,11 +54,11 @@ app.MapPost("/api/workbench/run", async (WorkbenchRequest request, IHttpClientFa
     {
         var paths = RepoPaths.Find();
         var attrs = new Attributes();
-        var events = new EventSystem();
+        var records = new RecordModule();
         var semantic = new SemanticEngine();
         var collector = new DataCollector.DataCollector(
             attrs,
-            events,
+            records,
             semantic,
             paths.CollectConfigDir,
             paths.SemanticConfigDir);
@@ -66,7 +66,7 @@ app.MapPost("/api/workbench/run", async (WorkbenchRequest request, IHttpClientFa
 
         SeedCoreAttributes(attrs, request);
         SeedCustomAttributes(attrs, request.Attributes);
-        SeedEvents(events, request.Events);
+        SeedRecords(records, request.Events);
 
         CollectResult collected = string.IsNullOrWhiteSpace(request.ConfigName)
             ? collector.Collect(request.NpcId, BuildCollectConfig(request.ManualConfig))
@@ -141,7 +141,7 @@ static void SeedCustomAttributes(Attributes attrs, IReadOnlyList<AttributeInput>
     }
 }
 
-static void SeedEvents(EventSystem eventSystem, IReadOnlyList<EventInput> events)
+static void SeedRecords(RecordModule records, IReadOnlyList<EventInput> events)
 {
     foreach (var evt in events)
     {
@@ -150,14 +150,16 @@ static void SeedEvents(EventSystem eventSystem, IReadOnlyList<EventInput> events
             continue;
         }
 
-        var eventId = eventSystem.Record(
+        var data = evt.Data
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
+            .ToDictionary(
+                pair => pair.Key.Trim(),
+                pair => ConvertLooseValue(pair.Value));
+
+        records.Remember(new RecordSource{Method="self"},
             evt.Type.Trim(),
             SplitCsv(evt.Tags),
-            evt.Data
-                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
-                .ToDictionary(
-                    pair => pair.Key.Trim(),
-                    pair => ConvertLooseValue(pair.Value)));
+            data, 0);
 
         foreach (var perception in evt.Perceptions)
         {
@@ -166,11 +168,13 @@ static void SeedEvents(EventSystem eventSystem, IReadOnlyList<EventInput> events
                 continue;
             }
 
-            eventSystem.Perceive(
-                eventId,
-                perception.NpcId.Trim(),
-                perception.How.Trim(),
-                string.IsNullOrWhiteSpace(perception.From) ? null : perception.From.Trim());
+            records.Remember(new RecordSource{
+                Method = perception.How.Trim(),
+                FromNpcId = perception.NpcId.Trim()
+            },
+            evt.Type.Trim(),
+            SplitCsv(evt.Tags),
+            data, 0);
         }
     }
 }

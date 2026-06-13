@@ -11,16 +11,25 @@ Logger.SetSink(logSink);
 Logger.Info("Playground", "Server starting", new { root });
 
 var clock = WorldClock.FromConfig(Path.Combine(root, "configs", "clock", "world_clock.json"));
-var events = new EventSystem();
 var semantic = new SemanticEngine();
-var llm = new LLMClient("http://localhost:8000", defaultMaxTokens: 8);
+var llm = LLMClient.FromConfig(root, defaultMaxTokens: 1024);
 bool llmEnabled = true;
 var llmManager = new LLMManager(llm);
 llmManager.OnStatusChanged += status => { Logger.Info("LLM", $"Status: {status}"); };
 llmManager.OnProcessOutput += line => { Logger.Debug("LLM.Proc", line); };
-llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
 
-var game = new GameLoop.GameLoop(clock, events);
+// If server already healthy, skip process launch
+if (!llm.HealthCheckAsync().Result)
+{
+    Logger.Info("Playground", "Starting LLM server process...");
+    llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
+}
+else
+{
+    Logger.Info("Playground", "LLM server already running on port 8000");
+}
+
+var game = new GameLoop.GameLoop(clock);
 game.LlmEnabled = true;
 game.LoadEntities(Path.Combine(root, "configs", "entities"), root, llm);
 
@@ -141,15 +150,29 @@ async Task HandleMessage(WebSocket ws, string json, string root, GameLoop.GameLo
             await DebugSetAttr(ws, npcId, field, val, game);
             break;
         case "add_event":
+            npcId = doc.RootElement.GetProperty("npcId").GetString();
             var etype = doc.RootElement.GetProperty("eventType").GetString();
             var tags = doc.RootElement.TryGetProperty("tags", out var t)
                 ? t.EnumerateArray().Select(x => x.GetString()).ToArray() : Array.Empty<string>();
             var edata = doc.RootElement.TryGetProperty("data", out var d)
                 ? JsonSerializer.Deserialize<Dictionary<string, object>>(d.GetRawText()) : new();
             var perceiveNpc = doc.RootElement.TryGetProperty("perceive", out var p) ? p.GetString() : null;
-            var eid = game.Events.Record(etype, tags, edata);
-            if (perceiveNpc != null) game.Events.Perceive(eid, perceiveNpc, "debug");
-            await Send(ws, new { type = "event", tick = game.Clock.Tick, text = $"Event: {etype} (id={eid[..6]})" });
+            var npc = game.GetEntity(npcId);
+            var record = new Record
+            {
+                Id = Guid.NewGuid().ToString("N")[..8],
+                Type = etype, Tags = tags, Data = edata, Tick = game.Clock.Tick,
+                Source = new RecordSource { Method = "debug", Reliability = 1f }
+            };
+            game.WorldLog.Append(record);
+            if (perceiveNpc != null)
+            {
+                var target = game.GetEntity(perceiveNpc);
+                target?.Get<RecordModule>()?.Remember(
+                    new RecordSource { Method = "debug", FromNpcId = npcId, Reliability = 1f },
+                    etype, tags, edata, game.Clock.Tick);
+            }
+            await Send(ws, new { type = "event", tick = game.Clock.Tick, text = $"Event: {etype} (id={record.Id})" });
             break;
         case "toggle_llm": game.LlmEnabled = !game.LlmEnabled; await SendLlmStatus(ws); break;
         case "start_llm": llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root); await SendLlmStatus(ws); break;
@@ -195,7 +218,7 @@ async Task SendSemantic(WebSocket ws, string npcId, string root, GameLoop.GameLo
 {
     var entity = game.GetEntity(npcId);
     if (entity == null) return;
-    var collector = new DataCollector(entity.Get<Attributes>(), game.Events, new SemanticEngine(),
+    var collector = new DataCollector(entity.Get<Attributes>(), entity.Get<RecordModule>(), new SemanticEngine(),
         Path.Combine(root, "configs", "collect"), Path.Combine(root, "configs", "semantic"));
     var collected = collector.Collect(npcId, new CollectConfig{
         AttrTags = new[]{"identity","vital","world","currency","trade"},
@@ -234,7 +257,7 @@ async Task DebugSetAttr(WebSocket ws, string npcId, string field, JsonElement va
     if (res != null) {
         foreach (var r in res.DirectActions) {
             entity.Get<ActionResolver>()?.Execute(new ActionItem{ActionType=r.ActionType,Params=r.Params},
-                attrs, game.Events, entity.Get<Scheduler>(), game.Clock.Snapshot());
+                attrs, entity.Get<Scheduler>(), game.Clock.Snapshot(), entity.Get<RecordModule>());
         }
     }
 }

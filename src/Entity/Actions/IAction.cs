@@ -15,7 +15,7 @@ namespace GameLoop
     public struct ActionContext
     {
         public Attributes Attrs;
-        public EventSystem Events;
+        public RecordModule Records;
         public Scheduler Scheduler;
         public TickSnapshot Snap;
         public Dictionary<string, object> Params;

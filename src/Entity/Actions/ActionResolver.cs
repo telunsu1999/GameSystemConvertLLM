@@ -51,13 +51,13 @@ namespace GameLoop
         // === Execute ===
 
         public ExecuteResult Execute(ActionItem item, Attributes attrs,
-                                      EventSystem events, Scheduler scheduler,
-                                      TickSnapshot snap)
+                                      Scheduler scheduler,
+                                      TickSnapshot snap, RecordModule records = null)
         {
             var ctx = new ActionContext
             {
                 Attrs = attrs,
-                Events = events,
+                Records = records,
                 Scheduler = scheduler,
                 Snap = snap,
                 Params = item.Params ?? new Dictionary<string, object>()
@@ -102,12 +102,13 @@ namespace GameLoop
         /// Execute a pre-resolved action instance (used for child actions from scheduler).
         /// </summary>
         public ExecuteResult ExecuteResolved(IAction action, Attributes attrs,
-            EventSystem events, Scheduler scheduler, TickSnapshot snap)
+            Scheduler scheduler, TickSnapshot snap,
+            RecordModule records = null)
         {
             var ctx = new ActionContext
             {
                 Attrs = attrs,
-                Events = events,
+                Records = records,
                 Scheduler = scheduler,
                 Snap = snap,
                 Params = new Dictionary<string, object>()
@@ -162,7 +163,7 @@ namespace GameLoop
 
         // === Interrupt ===
 
-        public void Interrupt(Attributes attrs, EventSystem events,
+        public void Interrupt(Attributes attrs,
                               Scheduler scheduler, TickSnapshot snap)
         {
             if (_current == null || !_current.Interruptible) return;
@@ -170,7 +171,6 @@ namespace GameLoop
             var ctx = new ActionContext
             {
                 Attrs = attrs,
-                Events = events,
                 Scheduler = scheduler,
                 Snap = snap,
                 Params = new Dictionary<string, object>()

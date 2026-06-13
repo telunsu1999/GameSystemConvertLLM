@@ -9,7 +9,6 @@
     <ProjectReference Include="..\..\Entity\Attributes\Attributes.csproj" />
     <ProjectReference Include="..\..\Entity\Triggers\TriggerSystem.csproj" />
     <ProjectReference Include="..\..\Entity\Actions\ActionResolver.csproj" />
-    <ProjectReference Include="..\Events\EventSystem.csproj" />
     <ProjectReference Include="..\Clock\WorldClock.csproj" />
     <ProjectReference Include="..\Data\DataCollector.csproj" />
     <ProjectReference Include="..\Prompt\PromptTemplate.csproj" />

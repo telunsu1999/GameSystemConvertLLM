@@ -1,0 +1,9 @@
+{
+  "outward": [
+    { "target": "merchant", "type": "affection", "value": 85, "tags": ["romantic"] },
+    { "target": "guard",    "type": "respect",   "value": 40, "tags": ["neighbor"] }
+  ],
+  "perceived": [
+    { "source": "merchant", "type": "felt_warmth", "value": 20, "confidence": 0.4, "via": "observation" }
+  ]
+}

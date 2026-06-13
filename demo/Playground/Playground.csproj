@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Entity\Attributes\Attributes.csproj" />
-    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
     <ProjectReference Include="..\..\src\System\Clock\WorldClock.csproj" />
     <ProjectReference Include="..\..\src\Entity\Scheduler\Scheduler.csproj" />
     <ProjectReference Include="..\..\src\Entity\Triggers\TriggerSystem.csproj" />

@@ -26,8 +26,11 @@ namespace GameLoop
                 ctx.Attrs.Get("location")?.Value ?? "",
                 "string", new[] { "travel" });
 
-            ctx.Events.Record("npc_depart", new[] { "travel" },
-                new Dictionary<string, object> { { "to", _target } });
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
+                "travel", new[] { "travel" },
+                new Dictionary<string, object> { { "action", "depart" }, { "to", _target } },
+                ctx.Snap.Tick);
 
             // Return child action that will be scheduled
             yield return new ArriveAction { Location = _target };
@@ -36,8 +39,11 @@ namespace GameLoop
         public void OnInterrupt(ActionContext ctx)
         {
             ctx.Attrs.Set("moving", 0, "number", new[] { "travel" });
-            ctx.Events.Record("npc_interrupted", new[] { "travel" },
-                new Dictionary<string, object>());
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
+                "travel", new[] { "travel" },
+                new Dictionary<string, object> { { "action", "interrupted" } },
+                ctx.Snap.Tick);
         }
     }
 
@@ -53,8 +59,11 @@ namespace GameLoop
         {
             ctx.Attrs.Set("location", Location, "string", new[] { "world" });
             ctx.Attrs.Set("moving", 0, "number", new[] { "travel" });
-            ctx.Events.Record("npc_arrive", new[] { "travel" },
-                new Dictionary<string, object> { { "at", Location } });
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
+                "travel", new[] { "travel" },
+                new Dictionary<string, object> { { "action", "arrive" }, { "at", Location } },
+                ctx.Snap.Tick);
             yield break;
         }
 
@@ -83,14 +92,20 @@ namespace GameLoop
 
             ctx.Attrs.Set("hp", newHp, "number", new[] { "vital", "hp" });
 
-            ctx.Events.Record("damage_taken", new[] { "combat" },
-                new Dictionary<string, object> { { "amount", amount } });
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
+                "combat", new[] { "combat", "danger" },
+                new Dictionary<string, object> { { "action", "damage_taken" }, { "amount", amount } },
+                ctx.Snap.Tick);
 
             if (newHp <= 0)
             {
                 ctx.Attrs.Set("dead", 1, "number", new[] { "combat", "death" });
-                ctx.Events.Record("death", new[] { "combat", "death" },
-                    new Dictionary<string, object>());
+                ctx.Records?.Remember(
+                    new RecordSource { Method = "self", Reliability = 1f },
+                    "death", new[] { "combat", "death" },
+                    new Dictionary<string, object>(),
+                    ctx.Snap.Tick);
             }
 
             yield break;
@@ -129,10 +144,11 @@ namespace GameLoop
             var currentOwned = owned != null ? Convert.ToInt64(owned.Value) : 0;
             ctx.Attrs.Set(itemKey, currentOwned + count, "number", new[] { "trade" });
 
-            ctx.Events.Record("trade_completed", new[] { "trade" },
-                new Dictionary<string, object> {
-                    { "item", item }, { "count", count }, { "cost", cost }
-                });
+            ctx.Records?.Remember(
+                new RecordSource { Method = "self", Reliability = 1f },
+                "trade", new[] { "trade" },
+                new Dictionary<string, object> { { "item", item }, { "count", count }, { "cost", cost } },
+                ctx.Snap.Tick);
 
             yield break;
         }

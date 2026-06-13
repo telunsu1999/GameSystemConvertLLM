@@ -14,7 +14,7 @@ namespace GameLoop
     public class GameLoop
     {
         private readonly WorldClock _clock;
-        private readonly EventSystem _events;
+        private readonly WorldLog _worldLog;
         private readonly Dictionary<string, GameEntity> _entities = new Dictionary<string, GameEntity>();
         private readonly object _autoTickLock = new object();
         private Timer _autoTickTimer;
@@ -22,7 +22,7 @@ namespace GameLoop
         private bool _llmEnabled;
 
         public WorldClock Clock => _clock;
-        public EventSystem Events => _events;
+        public WorldLog WorldLog => _worldLog;
         public IReadOnlyDictionary<string, GameEntity> Entities => _entities;
         public bool LlmEnabled { get => _llmEnabled; set => _llmEnabled = value; }
 
@@ -40,10 +40,10 @@ namespace GameLoop
         /// <summary>Fires when any NPC goal milestone completes.</summary>
         public event Action<string> OnGoalProgressChanged;
 
-        public GameLoop(WorldClock clock, EventSystem events)
+        public GameLoop(WorldClock clock, WorldLog worldLog = null)
         {
             _clock = clock;
-            _events = events;
+            _worldLog = worldLog ?? new WorldLog();
         }
 
         public void AddEntity(GameEntity entity)
@@ -100,7 +100,7 @@ namespace GameLoop
                     {
                         Tick = snap.Tick, Hour = snap.Hour, Day = snap.Day,
                         Season = snap.Season, TimeBlock = snap.TimeBlock,
-                        Events = _events, LlmEnabled = _llmEnabled
+                        LlmEnabled = _llmEnabled
                     };
                     entity.OnTick(ctx);
 
@@ -108,16 +108,17 @@ namespace GameLoop
                     var sched = entity.Get<Scheduler>();
                     var resolver = entity.Get<ActionResolver>();
                     var attrs = entity.Get<Attributes>();
+                    var records = entity.Get<RecordModule>();
                     if (sched != null && resolver != null && attrs != null)
                     {
                         var due = sched.Check(snap);
                         foreach (var item in due)
                         {
                             if (item.ResolvedAction is IAction resolvedAct)
-                                resolver.ExecuteResolved(resolvedAct, attrs, _events, sched, snap);
+                                resolver.ExecuteResolved(resolvedAct, attrs, sched, snap, records);
                             else
                                 resolver.Execute(new ActionItem { ActionType = item.ActionType, Params = item.Params },
-                                    attrs, _events, sched, snap);
+                                    attrs, sched, snap, records);
                             Logger.Debug("Tick", $"schedule: {id}.{item.ActionType}", new { tick = snap.Tick });
                         }
                     }
@@ -204,7 +205,7 @@ namespace GameLoop
             foreach (var r in res.DirectActions)
             {
                 resolver.Execute(new ActionItem { ActionType = r.ActionType, Params = r.Params },
-                    attrs, _events, sched, snap);
+                    attrs, sched, snap, entity.Get<RecordModule>());
             }
 
             onStateChanged(BuildState());

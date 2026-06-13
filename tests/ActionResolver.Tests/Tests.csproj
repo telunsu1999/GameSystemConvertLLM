@@ -3,7 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Entity\Actions\ActionResolver.csproj" />
     <ProjectReference Include="..\..\src\Entity\Attributes\Attributes.csproj" />
-    <ProjectReference Include="..\..\src\System\Events\EventSystem.csproj" />
     <ProjectReference Include="..\..\src\Entity\Scheduler\Scheduler.csproj" />
     <ProjectReference Include="..\..\src\System\Clock\WorldClock.csproj" />
   </ItemGroup>

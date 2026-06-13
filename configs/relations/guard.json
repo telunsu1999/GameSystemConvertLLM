@@ -1,0 +1,6 @@
+{
+  "outward": [
+    { "target": "blacksmith", "type": "respect", "value": 70, "tags": ["duty", "protect"] }
+  ],
+  "perceived": []
+}

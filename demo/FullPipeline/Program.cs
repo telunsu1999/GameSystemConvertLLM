@@ -8,10 +8,10 @@ class Program
     {
         var root = FindRoot();
         var attrs = new Attributes();
-        var events = new EventSystem();
+        var records = new RecordModule();
         var semantic = new SemanticEngine();
         var dc = new DataCollector.DataCollector(
-            attrs, events, semantic,
+            attrs, records, semantic,
             Path.Combine(root, "configs", "collect"),
             Path.Combine(root, "configs", "semantic"));
         var pt = new PromptTemplate.PromptTemplate(
@@ -37,23 +37,25 @@ class Program
         attrs.Set("affection_max", 100, "number", new[]{"social"});
         foreach(var kv in attrs.Export()) Console.WriteLine($"  {kv.Key}={kv.Value.Value}");
 
-        var e1 = events.Record("death", new[]{"mine","danger"},
-            new Dictionary<string,object>{{"who","閻灝浼?},{"location","閻寧绀?}});
-        var e2 = events.Record("trade", new[]{"iron","trade"},
-            new Dictionary<string,object>{{"item","闁句線鏁?},{"change","濞戙劋鐜?}});
-        var e3 = events.Record("injury", new[]{"mine","danger"},
-            new Dictionary<string,object>{{"who","閸愭帡娅撻懓?},{"location","閻寧绀?}});
-        events.Perceive(e1, "blacksmith", "rumor");
-        events.Perceive(e2, "blacksmith", "witnessed");
-        events.Perceive(e3, "blacksmith", "told_by");
+        records.Remember(new RecordSource{Method="self"}, "death", new[]{"mine","danger"},
+            new Dictionary<string,object>{{"who","閻灝浼?},{"location","閻寧绀?}}, 0);
+        records.Remember(new RecordSource{Method="self"}, "trade", new[]{"iron","trade"},
+            new Dictionary<string,object>{{"item","闁句線鏁?},{"change","濞戙劋鐜?}}, 0);
+        records.Remember(new RecordSource{Method="rumor",FromNpcId="blacksmith"}, "death", new[]{"mine","danger"},
+            new Dictionary<string,object>{{"who","閻灝浼?},{"location","閻寧绀?}}, 0);
+        records.Remember(new RecordSource{Method="witnessed",FromNpcId="blacksmith"}, "trade", new[]{"iron","trade"},
+            new Dictionary<string,object>{{"item","闁句線鏁?},{"change","濞戙劋鐜?}}, 0);
+        records.Remember(new RecordSource{Method="self"}, "injury", new[]{"mine","danger"},
+            new Dictionary<string,object>{{"who","閸愭帡娅撻懓?},{"location","閻寧绀?}}, 0);
+        records.Remember(new RecordSource{Method="told_by",FromNpcId="blacksmith"}, "injury", new[]{"mine","danger"},
+            new Dictionary<string,object>{{"who","閸愭帡娅撻懓?},{"location","閻寧绀?}}, 0);
 
         Console.WriteLine("\n--- events ---");
-        foreach(var evt in events.Query(new EventQuery{NpcId="blacksmith",RecentDays=7}))
+        foreach(var evt in records.Recall(new[]{"mine","iron","trade","danger"}, 7, null))
         {
-            var p = evt.Perceptions.Find(pp=>pp.NpcId=="blacksmith");
             var desc = evt.Data.TryGetValue("who", out var w) ? w
                      : evt.Data.TryGetValue("item", out var it) ? it : "?";
-            Console.WriteLine($"  [{evt.Type}] {desc} (how={p?.How})");
+            Console.WriteLine($"  [{evt.Type}] {desc} (how={evt.Source.Method})");
         }
 
         // ==== OUTPUT ====

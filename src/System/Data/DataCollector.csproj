@@ -3,7 +3,7 @@
   <ItemGroup><PackageReference Include="Newtonsoft.Json" Version="13.0.4" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Entity\Attributes\Attributes.csproj" />
-    <ProjectReference Include="..\Events\EventSystem.csproj" />
+    <ProjectReference Include="..\..\Entity\Records\RecordModule.csproj" />
     <ProjectReference Include="..\Rules\SemanticEngine.csproj" />
     <ProjectReference Include="..\Log\Logger.csproj" />
   </ItemGroup>

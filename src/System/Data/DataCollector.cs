@@ -12,20 +12,20 @@ namespace GameLoop
     public class DataCollector : IDataCollector
     {
         private readonly Attributes _attrs;
-        private readonly EventSystem _events;
+        private readonly RecordModule _records;
         private readonly SemanticEngine _semantic;
         private readonly string _configDir;
         private readonly string _rulesDir;
 
         public DataCollector(
             Attributes attrs,
-            EventSystem events,
+            RecordModule records,
             SemanticEngine semantic,
             string configDir,
             string rulesDir)
         {
             _attrs = attrs;
-            _events = events;
+            _records = records;
             _semantic = semantic;
             _configDir = configDir;
             _rulesDir = rulesDir;
@@ -69,31 +69,22 @@ namespace GameLoop
             foreach (var kv in attrs)
                 data[kv.Key] = kv.Value.Value;
 
-            // 濞存粌顑勫▎銏ゅ绩閸洘鑲?
-            var q = new EventQuery
-            {
-                NpcId = npcId,
-                Tags = config.EventTags,
-                RecentDays = config.EventDays,
-                Known = true,
-                SourceFilter = config.EventSourceFilter,
-                SortBy = config.EventSortBy ?? "time_desc",
-                Limit = config.EventLimit ?? 5
-            };
-            var evts = _events.Query(q);
+            // Events from per-entity RecordModule
+            var evts = _records.Recall(
+                config.EventTags ?? new string[0],
+                config.EventDays ?? 7,
+                config.EventLimit ?? 5);
 
-            // 閻忕偞娲栭柦鈺傜鐎ｂ晜顐?闁?閻犲浂鍘虹粻鐔奉嚕閺囩喐鎯涢柛娆樺灣閺併倝鎯?memory_events 闁哄秶鍘х槐?
             var memList = new List<Dictionary<string, object>>();
             foreach (var evt in evts)
             {
-                var perp = evt.Perceptions.FirstOrDefault(p => p.NpcId == npcId);
                 var mem = new Dictionary<string, object>(evt.Data ?? new Dictionary<string, object>())
                 {
                     ["type"] = evt.Type,
-                    ["source"] = perp?.How ?? "unknown"
+                    ["source"] = evt.Source.Method
                 };
-                if (perp?.From != null)
-                    mem["from"] = perp.From;
+                if (evt.Source.FromNpcId != null)
+                    mem["from"] = evt.Source.FromNpcId;
                 memList.Add(mem);
             }
             data["memory_events"] = memList;
