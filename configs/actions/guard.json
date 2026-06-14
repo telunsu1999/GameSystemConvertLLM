@@ -1,5 +1,15 @@
 {
   "actions": {
+    "pray": {
+      "description": "在神殿虔诚祈祷，获得心灵平静",
+      "effect": "记录祈祷事件，增加祈祷计数",
+      "location": "神殿",
+      "steps": [
+        {"type":"add_attr", "field":"prayed_today", "value":1},
+        {"type":"add_attr", "field":"stamina", "value":5},
+        {"type":"record_event", "event_type":"npc_pray", "event_tags":["religious","daily"]}
+      ]
+    },
     "ignore": {
       "steps": [
         {"type":"record_event", "event_type":"npc_ignore_player", "event_tags":["social"]}

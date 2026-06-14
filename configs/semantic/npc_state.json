@@ -20,6 +20,7 @@
     },
     { "type": "key_value","output": "location","field": "location","template": "当前位置: {value}" },
     { "type": "key_value","output": "weather","field": "weather","template": "天气: {value}" },
+    { "type": "key_value","output": "known_old_lei","field": "known_old_lei","template": "{value}" },
     { "type": "inventory_list","output": "inventory","field": "inventory","format": "{name}x{count}","prefix": "背包: " }
   ]
 }

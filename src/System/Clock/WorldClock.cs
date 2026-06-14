@@ -29,6 +29,8 @@ namespace GameLoop
         public string Season => _seasonNames[SeasonIndex];
         public int SeasonIndex => ((_tick * _config.MinutesPerTick) / 1440 / _config.DaysPerSeason) % _config.Seasons.Count;
         public int Year => (_tick * _config.MinutesPerTick / 1440 / _config.DaysPerSeason / _config.Seasons.Count) + 1;
+        public int Month => (SeasonIndex * 3) + ((DayOfSeason - 1) / 10) + 1;
+        public int Second => 0;
         public string TimeBlock => GetTimeBlock(Hour);
 
         private WorldClock(ClockConfig config)
@@ -99,6 +101,8 @@ namespace GameLoop
                 Minute = Minute,
                 Hour = Hour,
                 Day = DayOfSeason,
+                Month = Month,
+                Second = Second,
                 Season = Season,
                 Year = Year,
                 TimeBlock = TimeBlock

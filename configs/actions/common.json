@@ -1,5 +1,13 @@
 {
   "actions": {
+    "goto": {
+      "description": "移动到指定地点，到达后才能执行需要在该地点的动作（如酒馆喝酒、商店交谈等）",
+      "effect": "移动到目标地点",
+      "params": [
+        {"name":"target","type":"string","description":"目标地点名称，如：酒馆、商店、铁匠铺、城门"}
+      ],
+      "steps": []
+    },
     "greet": {
       "description": "向玩家打招呼，表示友好",
       "effect": "记录社交事件",
@@ -66,6 +74,7 @@
     "drink": {
       "description": "去酒馆喝酒，消耗5金币",
       "effect": "金币-5，设置醉酒状态",
+      "location": "酒馆",
       "check": [{"field":"gold","op":"gte","value":5}],
       "steps": [
         {"type":"sub_attr", "field":"gold", "value":5},
@@ -93,62 +102,6 @@
         {"type":"sub_attr", "field":"stamina", "value":5},
         {"type":"record_event", "event_type":"npc_attack", "event_tags":["combat"],
          "event_data":{"target":"{params.target}","damage":"{params.damage}"}}
-      ]
-    },
-
-    "morning_routine": {
-      "description": "早晨起来吃早饭，补充体力准备一天的工作",
-      "effect": "体力+10，食物-1",
-      "steps": [
-        {"type":"add_attr", "field":"stamina", "value":10},
-        {"type":"sub_attr", "field":"food_owned", "value":1},
-        {"type":"record_event", "event_type":"npc_morning_routine", "event_tags":["daily","work"]}
-      ]
-    },
-    "morning_work": {
-      "description": "上午努力工作锻造铁器",
-      "effect": "金币+10，体力-8",
-      "steps": [
-        {"type":"add_attr", "field":"gold", "value":10},
-        {"type":"sub_attr", "field":"stamina", "value":8},
-        {"type":"record_event", "event_type":"npc_forge", "event_tags":["daily","work"]}
-      ]
-    },
-    "afternoon_work": {
-      "description": "下午继续工作，效率更高",
-      "effect": "金币+12，体力-6",
-      "steps": [
-        {"type":"add_attr", "field":"gold", "value":12},
-        {"type":"sub_attr", "field":"stamina", "value":6},
-        {"type":"record_event", "event_type":"npc_afternoon_work", "event_tags":["daily","work"]}
-      ]
-    },
-    "evening_routine": {
-      "description": "收工后去酒馆喝一杯",
-      "effect": "金币-5，体力-3，进入醉酒状态",
-      "steps": [
-        {"type":"sub_attr", "field":"gold", "value":5},
-        {"type":"set_attr", "field":"drunk", "value":1},
-        {"type":"sub_attr", "field":"stamina", "value":3},
-        {"type":"record_event", "event_type":"npc_evening", "event_tags":["daily","rest"]}
-      ]
-    },
-    "morning_business": {
-      "description": "上午开门营业",
-      "effect": "金币+15，体力-5",
-      "steps": [
-        {"type":"add_attr", "field":"gold", "value":15},
-        {"type":"sub_attr", "field":"stamina", "value":5},
-        {"type":"record_event", "event_type":"npc_trade_morning", "event_tags":["daily","trade"]}
-      ]
-    },
-    "afternoon_business": {
-      "description": "下午继续做生意，客流量更大",
-      "effect": "金币+20，体力-6",
-      "steps": [
-        {"type":"add_attr", "field":"gold", "value":20},
-        {"type":"sub_attr", "field":"stamina", "value":6},
-        {"type":"record_event", "event_type":"npc_trade_afternoon", "event_tags":["daily","trade"]}
       ]
     },
 

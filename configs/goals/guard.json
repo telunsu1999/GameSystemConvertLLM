@@ -22,6 +22,15 @@
       ]
     },
     {
+      "id": "pray_temple",
+      "type": "ShortTerm",
+      "desc": "去神殿祈祷一次",
+      "priority": 4,
+      "milestones": [
+        { "id": "prayed", "desc": "在神殿祈祷了", "conditionAttr": "prayed_today", "conditionOp": "gte", "conditionValue": 1 }
+      ]
+    },
+    {
       "id": "daily_patrol",
       "type": "ShortTerm",
       "desc": "完成日常巡逻",

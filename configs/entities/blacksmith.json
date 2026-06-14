@@ -15,7 +15,8 @@
     {"key":"moving","type":"number","value":0,"tags":["travel"]},
     {"key":"dead","type":"number","value":0,"tags":["combat"]},
     {"key":"iron_owned","type":"number","value":5,"tags":["trade"]},
-    {"key":"llm_thinking","type":"number","value":0,"tags":["meta"]}
+    {"key":"llm_thinking","type":"number","value":0,"tags":["meta"]},
+    {"key":"known_old_lei","type":"string","value":"老雷一般会在商店","tags":["world","knowledge"]}
   ],
   "schedule": "configs/schedules/blacksmith.json",
   "triggers": "configs/triggers/blacksmith.json",

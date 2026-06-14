@@ -1,20 +1,8 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
-
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Project context for OpenSpec
+context: |
+  GameSystemConvertLLM is a game simulation system where NPCs are driven by LLM (Qwen3.5-4B).
+  C# .NET backend with component-based entity system, Python LLM inference server.
+  Web frontend with Canvas map display and WebSocket real-time communication.
+  All game logic is JSON-configurable — no hardcoded behavior.

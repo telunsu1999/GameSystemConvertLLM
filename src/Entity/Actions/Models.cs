@@ -45,6 +45,11 @@ namespace GameLoop
 
         [JsonProperty("params")]
         public List<ParamSchema> Params { get; set; }
+
+        /// <summary>If set, the NPC must be at this location before the action can execute.
+        /// ActionResolver will auto-schedule a move_to when the location doesn't match.</summary>
+        [JsonProperty("location")]
+        public string Location { get; set; }
     }
 
     public class ActionStep

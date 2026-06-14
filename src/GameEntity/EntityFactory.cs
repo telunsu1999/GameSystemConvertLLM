@@ -55,8 +55,7 @@ namespace GameLoop
                 var resolved = ResolvePath(actionPath, rootDir);
                 if (File.Exists(resolved)) resolver.LoadMapping(resolved);
             }
-            resolver.Register(new GotoAction());
-            resolver.Register(new ArriveAction());
+            resolver.Register(new MoveToAction());
             resolver.Register(new TakeDamageAction());
             resolver.Register(new TradeAction());
 

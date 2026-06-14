@@ -14,5 +14,6 @@
     <ProjectReference Include="..\System\Log\Logger.csproj" />
     <ProjectReference Include="..\Entity\LlmPlanner\LlmPlanner.csproj" />
     <ProjectReference Include="..\System\LLM\Client\LLMClient.csproj" />
+    <ProjectReference Include="..\System\Map\MapSystem.csproj" />
   </ItemGroup>
 </Project>

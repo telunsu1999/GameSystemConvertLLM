@@ -1,6 +1,13 @@
 {
   "rules": [
     {
+      "mode": "llm",
+      "conditions": [{"field":"hour","op":"eq","value":8}],
+      "action_type": "decide",
+      "description": "每日晨间规划",
+      "tags": ["daily","plan"]
+    },
+    {
       "mode": "direct",
       "conditions": [{"field":"dead","op":"eq","value":1}],
       "action_type": "play_anim",

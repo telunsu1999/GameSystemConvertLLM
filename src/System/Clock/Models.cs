@@ -10,6 +10,8 @@ namespace GameLoop
         public int Minute;
         public int Hour;
         public int Day;
+        public int Month;
+        public int Second;
         public string Season;
         public int Year;
         public string TimeBlock;

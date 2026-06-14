@@ -132,11 +132,12 @@ class ModelManager:
             print(f"[INFO] GPU: {gpu} ({vram:.1f} GB)")
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            MODEL_NAME, trust_remote_code=True
+            MODEL_NAME, trust_remote_code=True, local_files_only=True
         )
         self.model = AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
             trust_remote_code=True,
+            local_files_only=True,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
             device_map="auto" if self.device == "cuda" else "cpu",
         )

@@ -19,18 +19,29 @@ llmManager.OnStatusChanged += status => { Logger.Info("LLM", $"Status: {status}"
 llmManager.OnProcessOutput += line => { Logger.Debug("LLM.Proc", line); };
 
 // If server already healthy, skip process launch
-if (!llm.HealthCheckAsync().Result)
+if (await llm.HealthCheckAsync())
 {
-    Logger.Info("Playground", "Starting LLM server process...");
-    llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
+    Logger.Info("Playground", "LLM server already running on port 8000");
+    llmManager.AttachToExisting(
+        Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
 }
 else
 {
-    Logger.Info("Playground", "LLM server already running on port 8000");
+    Logger.Info("Playground", "Starting LLM server process...");
+    _ = llmManager.StartAsync(Path.Combine(root, ".venv", "Scripts", "python.exe"), root);
 }
 
 var game = new GameLoop.GameLoop(clock);
 game.LlmEnabled = true;
+
+// Load map first so entity positions register correctly
+var mapPath = Path.Combine(root, "configs", "maps", "town_map.json");
+if (File.Exists(mapPath))
+{
+    game.LoadMap(mapPath);
+    Logger.Info("Playground", "Map loaded from config");
+}
+
 game.LoadEntities(Path.Combine(root, "configs", "entities"), root, llm);
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,15 +64,22 @@ app.Map("/ws", async (HttpContext ctx) => {
     await HandleSession(ws, root, game, llmManager);
 });
 
-app.Run();
+await app.RunAsync();
 
 async Task HandleSession(WebSocket ws, string root, GameLoop.GameLoop game, LLMManager llmManager)
 {
     var buffer = new byte[4096];
     try {
         var state = game.BuildState();
-        await Send(ws, new { type = "state", tick = state.Tick, season = state.Season,
-            day = state.Day, timeBlock = state.TimeBlock, hour = state.Hour, npcs = state.Npcs });
+        await Send(ws, new { type = "state", tick = state.Tick, year = state.Year, month = state.Month,
+            day = state.Day, hour = state.Hour, minute = state.Minute, second = state.Second,
+            season = state.Season, timeBlock = state.TimeBlock, npcs = state.Npcs });
+
+        // Send map data if loaded
+        var mapData = game.BuildMapData();
+        if (mapData != null)
+            await Send(ws, new { type = "map_data", data = mapData });
+
         await SendLlmStatus(ws);
         void OnStatus(LLMStatus s) { try { if (ws.State == WebSocketState.Open) _ = SendLlmStatus(ws); } catch { } }
         llmManager.OnStatusChanged += OnStatus;
@@ -103,6 +121,7 @@ async Task HandleSession(WebSocket ws, string root, GameLoop.GameLoop game, LLMM
                 tick = session.Tick,
                 prompt = session.Prompt,
                 response = session.Response,
+                tools = session.ToolsJson ?? "[]",
                 latency = session.Latency,
                 error = session.Error ? session.Response : null,
                 steps = session.Steps?.Select(s => new { tick = s.Tick, action = s.Action }).ToList(),
@@ -128,15 +147,17 @@ async Task HandleMessage(WebSocket ws, string json, string root, GameLoop.GameLo
             int count = doc.RootElement.TryGetProperty("count", out var c) ? c.GetInt32() : 1;
             Logger.Info("Tick", $"Advancing {count} ticks", new { current = game.Clock.Tick });
             game.AdvanceTicks(count, state => {
-                _ = Send(ws, new { type = "state", tick = state.Tick, season = state.Season,
-                    day = state.Day, timeBlock = state.TimeBlock, hour = state.Hour, npcs = state.Npcs });
+                _ = Send(ws, new { type = "state", tick = state.Tick, year = state.Year, month = state.Month,
+                    day = state.Day, hour = state.Hour, minute = state.Minute, second = state.Second,
+                    season = state.Season, timeBlock = state.TimeBlock, npcs = state.Npcs });
             });
             break;
         case "interact":
             var npcId = doc.RootElement.GetProperty("npcId").GetString();
             game.Interact(npcId, state => {
-                _ = Send(ws, new { type = "state", tick = state.Tick, season = state.Season,
-                    day = state.Day, timeBlock = state.TimeBlock, hour = state.Hour, npcs = state.Npcs });
+                _ = Send(ws, new { type = "state", tick = state.Tick, year = state.Year, month = state.Month,
+                    day = state.Day, hour = state.Hour, minute = state.Minute, second = state.Second,
+                    season = state.Season, timeBlock = state.TimeBlock, npcs = state.Npcs });
             });
             break;
         case "semantic":
@@ -175,7 +196,7 @@ async Task HandleMessage(WebSocket ws, string json, string root, GameLoop.GameLo
             await Send(ws, new { type = "event", tick = game.Clock.Tick, text = $"Event: {etype} (id={record.Id})" });
             break;
         case "toggle_llm": game.LlmEnabled = !game.LlmEnabled; await SendLlmStatus(ws); break;
-        case "start_llm": llmManager.Start(Path.Combine(root, ".venv", "Scripts", "python.exe"), root); await SendLlmStatus(ws); break;
+        case "start_llm": _ = llmManager.StartAsync(Path.Combine(root, ".venv", "Scripts", "python.exe"), root); await SendLlmStatus(ws); break;
         case "stop_llm": llmManager.Stop(); await SendLlmStatus(ws); break;
         case "health": await SendLlmStatus(ws); break;
         case "auto_tick":
@@ -187,8 +208,9 @@ async Task HandleMessage(WebSocket ws, string json, string root, GameLoop.GameLo
                     bool block = doc.RootElement.TryGetProperty("blockOnThinking", out var bt) && bt.GetBoolean();
                     game.BlockOnLlmThinking = block;
                     game.StartAutoTick(interval, state => {
-                        _ = Send(ws, new { type = "state", tick = state.Tick, season = state.Season,
-                            day = state.Day, timeBlock = state.TimeBlock, hour = state.Hour, npcs = state.Npcs });
+                        _ = Send(ws, new { type = "state", tick = state.Tick, year = state.Year, month = state.Month,
+                            day = state.Day, hour = state.Hour, minute = state.Minute, second = state.Second,
+                            season = state.Season, timeBlock = state.TimeBlock, npcs = state.Npcs });
                     });
                     await SendAutoTickState(ws, game);
                     break;
@@ -274,7 +296,8 @@ async Task SendTrace(WebSocket ws, int step, string phase, string detail) {
 async Task SendLlmStatus(WebSocket ws) {
     var online = llmManager.Status == LLMStatus.Online;
     var running = llmManager.Status == LLMStatus.Starting || llmManager.Status == LLMStatus.Online;
-    await Send(ws, new { type = "llm_status", online, llmEnabled = game.LlmEnabled, running });
+    var error = llmManager.Status == LLMStatus.Error;
+    await Send(ws, new { type = "llm_status", online, llmEnabled = game.LlmEnabled, running, error });
 }
 async Task SendAutoTickState(WebSocket ws, GameLoop.GameLoop game) {
     await Send(ws, new {

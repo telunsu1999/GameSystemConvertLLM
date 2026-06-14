@@ -1,0 +1,48 @@
+{
+  "id": "town_map",
+  "name": "王都",
+  "width": 30,
+  "height": 20,
+  "ticks_per_unit_distance": 1.0,
+  "terrain_defs": {
+    "G": { "name": "草地",    "walkable": true,  "speed_mod": 1.0 },
+    "R": { "name": "道路",    "walkable": true,  "speed_mod": 1.5 },
+    "W": { "name": "水域",    "walkable": false, "speed_mod": 0 },
+    "B": { "name": "建筑",    "walkable": false, "speed_mod": 0 },
+    "F": { "name": "森林",    "walkable": true,  "speed_mod": 0.5 },
+    "M": { "name": "山脉",    "walkable": false, "speed_mod": 0 }
+  },
+  "grid": [
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    "MMMFFFFFFFFGGGGGGGGGGGGFFFFFMMM",
+    "MMMFFFFFFFFGGGGRRRRGGGGGFFFFMMM",
+    "MMMFFFFFGGGGGGRRRRRRGGGGGFFFMMM",
+    "MMMFFFFGGGGGGGRRRRRRRRGGGGGGMMM",
+    "MMMFFFGGGGGGGGRRRRRRRRRRGGGGGMM",
+    "MMMFFGGGGGGBBBRRRRRRRBBBBGGGGMM",
+    "MMMFGGGGGGBBBBRRRRRRRBBBBGGGGMM",
+    "MMMFGGGGGGGGRRRRRRRRRRGGGGGGGMM",
+    "MMMGGGGGGGGGRRRRRRRRRRGGGGGGGMM",
+    "MMMGGGGBBBRRRRRRRRRRRRBBGGGGMMM",
+    "MMMGGGGBBBRRRRRRRRRRRRBBGGGGMMM",
+    "MMMGGGGGGGRRRRRRRRRRRRGGGGGGMMM",
+    "MMMGGGGGGGRRRRRRRRRRRGGGGGGGMMM",
+    "MMMFFGGGGGGBBBRRRRRRRBBGGGGFFMM",
+    "MMMFFGGGGGGBBBRRRRRRRBBGGGFFFMM",
+    "MMMFFFGGGGGGGGRRRRRRRRGGGGFFFMM",
+    "MMMMMMMGGGGGGGRRRRRRGGGGGMMMMMM",
+    "MMMMMMMWWWGGGGRRRRRRGGGWWWMMMMM",
+    "MMMMMMMMMMGGGGGGGGGGGGGGMMMMMMMM"
+  ],
+  "poi_nodes": [
+    { "id": "城门",       "name": "城门",     "grid_x": 14, "grid_y": 18, "type": "plaza",      "tags": ["safe", "daylight"] },
+    { "id": "集市",       "name": "集市",     "grid_x": 14, "grid_y": 11, "type": "commercial",  "tags": ["crowded", "daylight"] },
+    { "id": "铁匠铺",     "name": "铁匠铺",   "grid_x": 8,  "grid_y": 8,  "type": "workshop",    "tags": ["crafting"] },
+    { "id": "酒馆",       "name": "酒馆",     "grid_x": 14, "grid_y": 5,  "type": "social",      "tags": ["social", "nightlife"] },
+    { "id": "哨所",       "name": "哨所",     "grid_x": 18, "grid_y": 7,  "type": "military",    "tags": ["restricted"] },
+    { "id": "神殿",       "name": "神殿",     "grid_x": 4,  "grid_y": 14, "type": "religious",   "tags": ["healing"] },
+    { "id": "商店",       "name": "商店",     "grid_x": 11, "grid_y": 12, "type": "commercial",  "tags": ["shop"] },
+    { "id": "森林边缘",   "name": "森林边缘", "grid_x": 24, "grid_y": 14, "type": "wilderness",  "tags": ["forest", "danger"] },
+    { "id": "河边",       "name": "河边",     "grid_x": 10, "grid_y": 18, "type": "natural",     "tags": ["water"] }
+  ]
+}

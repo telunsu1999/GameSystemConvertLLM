@@ -8,5 +8,6 @@
     <ProjectReference Include="..\Records\RecordModule.csproj" />
     <ProjectReference Include="..\Scheduler\Scheduler.csproj" />
     <ProjectReference Include="..\..\System\Log\Logger.csproj" />
+    <ProjectReference Include="..\..\System\Map\MapSystem.csproj" />
   </ItemGroup>
 </Project>

@@ -76,16 +76,15 @@ namespace GameLoop
         }
 
         /// <summary>
-        /// Structured call with separate system/user messages and optional tools.
+        /// Structured call with per-strategy LLM generation config.
         /// </summary>
         public async Task<string> SendWithToolsAsync(
             string systemPrompt,
             string userPrompt,
             List<object> tools = null,
-            int? maxTokens = null,
-            double? temperature = null,
-            bool enableThinking = false)
+            LlmGenConfig genCfg = null)
         {
+            var cfg = genCfg ?? new LlmGenConfig();
             var messages = new List<Message>();
             if (!string.IsNullOrEmpty(systemPrompt))
                 messages.Add(new Message { role = "system", content = systemPrompt });
@@ -95,10 +94,13 @@ namespace GameLoop
             {
                 model = _modelName,
                 messages = messages,
-                max_tokens = maxTokens ?? _defaultMaxTokens,
-                temperature = temperature ?? _defaultTemperature,
-                top_p = 1.0,
-                enable_thinking = enableThinking,
+                max_tokens = cfg.MaxTokens > 0 ? cfg.MaxTokens : _defaultMaxTokens,
+                temperature = cfg.Temperature,
+                top_p = cfg.TopP,
+                top_k = cfg.TopK,
+                presence_penalty = cfg.PresencePenalty,
+                repetition_penalty = cfg.RepetitionPenalty,
+                enable_thinking = cfg.EnableThinking,
                 tools = tools,
                 tool_choice = tools != null && tools.Count > 0 ? "auto" : null,
             };
@@ -119,8 +121,17 @@ namespace GameLoop
         {
             try
             {
-                var cts = new System.Threading.CancellationTokenSource(2000);
-                var response = await _http.GetAsync($"{_baseUrl}/health", cts.Token);
+                using var cts = new System.Threading.CancellationTokenSource(2000);
+                return await HealthCheckAsync(cts.Token);
+            }
+            catch { return false; }
+        }
+
+        public async Task<bool> HealthCheckAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"{_baseUrl}/health", cancellationToken);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -138,6 +149,9 @@ namespace GameLoop
             public int max_tokens { get; set; }
             public double temperature { get; set; }
             public double top_p { get; set; }
+            public int top_k { get; set; }
+            public double presence_penalty { get; set; }
+            public double repetition_penalty { get; set; }
             public bool enable_thinking { get; set; }
             public List<object> tools { get; set; }
             public string tool_choice { get; set; }

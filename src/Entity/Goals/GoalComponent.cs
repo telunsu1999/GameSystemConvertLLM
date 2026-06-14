@@ -95,6 +95,8 @@ namespace GameLoop
             Logger.Debug("Goal", $"Completed: {id}", new { desc = g.Desc });
         }
 
+
+
         /// <summary>Get all active (incomplete) goals, sorted by priority desc.</summary>
         public List<Goal> GetActiveGoals()
         {

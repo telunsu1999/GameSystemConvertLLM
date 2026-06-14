@@ -5,108 +5,124 @@
 <title>GameLoop Playground</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;height:100vh}
-#top{display:flex;align-items:center;gap:10px;padding:6px 12px;background:#0d1b2a;border-bottom:2px solid #0f3460}
-#top button{padding:5px 12px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:12px}
+body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#top{display:flex;align-items:center;gap:10px;padding:5px 12px;background:#0d1b2a;border-bottom:2px solid #0f3460;z-index:100;flex-shrink:0;flex-wrap:wrap}
+#top button{padding:4px 10px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
 #top button:hover{background:#1a4a8a}
 #top button.sel-speed{background:#e94560;border-color:#e94560}
-#top .time{font-size:17px;font-weight:bold;color:#e94560;min-width:180px}
-#top .divider{width:1px;height:22px;background:#0f3460}
-#llm-bar{display:flex;align-items:center;gap:8px;margin-left:auto;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:bold}
+#top .time{font-size:16px;font-weight:bold;color:#e94560;min-width:260px}
+#top .divider{width:1px;height:20px;background:#0f3460}
+#llm-bar{display:flex;align-items:center;gap:8px;margin-left:auto;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:bold}
 #llm-bar.running{background:#0a2a1a;border:1px solid #00ff88;color:#00ff88}
 #llm-bar.stopped{background:#2a0a0a;border:1px solid #ff4444;color:#ff4444}
+#llm-bar.error{background:#2a0a0a;border:1px solid #ff4444;color:#ff4444}
 #llm-bar.loading{background:#2a2a0a;border:1px solid #e9c445;color:#e9c445}
-#llm-bar .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+#llm-bar .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
 #llm-bar.running .dot{background:#00ff88;animation:pulse 1.5s infinite}
 #llm-bar.loading .dot{background:#e9c445;animation:spin .8s linear infinite}
+#llm-bar.error .dot{background:#ff4444}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
+
 .llm-thinking{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#0d1b2a;border:2px solid #e9c445;border-radius:8px;padding:20px 30px;text-align:center}
 .llm-thinking.active{display:block}
 .llm-thinking .spinner{width:30px;height:30px;border:3px solid #0f3460;border-top:3px solid #e9c445;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
-.llm-thinking .msg{color:#e9c445;font-size:14px;margin-top:8px}
-#main{display:flex;flex:1;overflow:hidden}
-#npcs{display:flex;gap:10px;padding:10px;flex:1;overflow-y:auto}
-.npc{flex:1;min-width:300px;max-width:420px;background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
-.npc h3{font-size:16px;margin:0;display:flex;align-items:center;gap:6px}
-.npc h3 .persona{font-size:10px;color:#888;font-weight:normal}
-.npc .bar{margin:0;display:flex;align-items:center;gap:5px}
-.npc .bar .lbl{width:22px;font-size:10px;color:#aaa;text-align:right}
-.npc .bar .fill{flex:1;height:8px;background:#0f3460;border-radius:4px;overflow:hidden}
-.npc .bar .fill div{height:100%;border-radius:4px;transition:width .3s}
-.npc .bar .fill .hp{background:#e94560}.npc .bar .fill .st{background:#e9c445}
-.npc .info{font-size:11px;color:#aaa;display:flex;gap:10px}
-.npc .info b{color:#eee}
-.npc .attrs-row{font-size:9px;color:#666;padding:1px 0}
-.npc .attrs-row .a-cat{color:#0f3460;background:#0a0a1a;padding:0 4px;border-radius:2px;margin-right:6px;font-size:8px}
-.npc .goals-title{font-size:10px;color:#e9c445;text-transform:uppercase;letter-spacing:1px;margin-top:4px;border-bottom:1px solid #0f3460;padding-bottom:2px}
-.npc .goal-section{margin:2px 0}
-.npc .goal-section .gs-label{font-size:9px;color:#555;padding:1px 0;letter-spacing:1px}
-.npc .goal-row{display:flex;align-items:center;gap:5px;font-size:11px;padding:1px 0}
-.npc .goal-row .g-icon{font-size:12px;width:14px;text-align:center}
-.npc .goal-row .g-desc{flex:1;color:#ccc}
-.npc .goal-row .g-progress{font-size:10px;color:#888;min-width:40px;text-align:right}
-.npc .goal-row .g-bar{width:40px;height:4px;background:#0f3460;border-radius:2px;overflow:hidden}
-.npc .goal-row .g-bar div{height:100%;border-radius:2px}
-.npc .goal-row.long .g-bar div{background:#e9c445}
-.npc .goal-row.short .g-bar div{background:#0f3460}
-.npc .goal-row .g-milestone{font-size:9px;color:#666;margin-left:19px}
-.npc .goal-row.long .g-icon{color:#e9c445}
-.npc .goal-row.short .g-icon{color:#0f3460}
-.npc .goal-row.done .g-desc{color:#555;text-decoration:line-through}
-.npc .upcoming{margin-top:4px;font-size:10px;color:#777;border-top:1px solid #0f3460;padding-top:4px}
-.npc .actions{margin-top:4px;display:flex;gap:5px}
-.npc .actions button{flex:1;padding:5px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
-.npc .actions button:hover{background:#1a4a8a}
-.npc.thinking{border-color:#e9c445;box-shadow:0 0 12px rgba(233,196,69,.3)}
-.npc .think-badge{display:none;font-size:10px;color:#e9c445;margin-left:8px;animation:pulse 1.5s infinite}
-.npc.thinking .think-badge{display:inline}
-.npc .think-badge .spinner-sm{display:inline-block;width:8px;height:8px;border:2px solid #0f3460;border-top:2px solid #e9c445;border-radius:50%;animation:spin .8s linear infinite;margin-right:3px;vertical-align:middle}
-#right{width:420px;display:flex;flex-direction:column;background:#16213e;border-left:1px solid #0f3460}
-#right .tab-bar{display:flex}
-#right .tab-bar button{flex:1;padding:6px;background:#0f3460;border:none;color:#aaa;cursor:pointer;font-size:12px}
-#right .tab-bar button.sel{background:#16213e;color:#eee;border-bottom:2px solid #e94560}
-#right .tab{flex:1;overflow-y:auto;display:none;padding:8px;font-size:12px}
-#right .tab.active{display:block}
-#events .e{padding:3px 0;border-bottom:1px solid #0f3460;color:#aaa}
+
+#main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* Left: NPC List */
+#npc-list{width:200px;background:#16213e;border-right:1px solid #0f3460;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#npc-list h4{padding:6px 10px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #0f3460;flex-shrink:0}
+#npc-list-items{flex:1;overflow-y:auto;padding:4px}
+.npc-item{padding:6px 8px;margin:2px 0;border-radius:4px;cursor:pointer;border:1px solid transparent;transition:background .15s;font-size:11px}
+.npc-item:hover{background:#1a2a4a}
+.npc-item.sel{background:#1a3a5a;border-color:#e94560}
+.npc-item.thinking{border-color:#e9c445}
+.npc-item .ni-name{font-weight:bold;font-size:12px}
+.npc-item .ni-persona{font-size:9px;color:#666}
+.npc-item .ni-hp{height:3px;background:#0f3460;border-radius:2px;margin:3px 0;overflow:hidden}
+.npc-item .ni-hp div{height:100%;background:#e94560;border-radius:2px}
+.npc-item .ni-info{font-size:9px;color:#888;display:flex;gap:6px}
+.npc-item .ni-think{font-size:9px;color:#e9c445;animation:pulse 1.5s infinite}
+
+/* Map */
+#map-container{flex:1;position:relative;overflow:hidden;cursor:grab}
+#map-container:active{cursor:grabbing}
+#map-container.dragging{cursor:grabbing}
+#map-canvas{display:block;position:absolute;top:0;left:0}
+
+/* Right: NPC Detail */
+#detail{width:320px;background:#16213e;border-left:1px solid #0f3460;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#detail h4{padding:6px 10px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #0f3460;flex-shrink:0}
+#detail-content{flex:1;overflow-y:auto;padding:10px;font-size:12px}
+#detail-content .empty{color:#555;text-align:center;padding:30px 10px;font-size:12px}
+#detail-content h3{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:6px;color:#eee}
+#detail-content h3 .persona{font-size:10px;color:#888;font-weight:normal}
+#detail-content h3 .think-badge{font-size:10px;color:#e9c445;animation:pulse 1.5s infinite}
+#detail-content .bar{margin:3px 0;display:flex;align-items:center;gap:5px;font-size:11px}
+#detail-content .bar .lbl{width:20px;color:#aaa;text-align:right}
+#detail-content .bar .fill{flex:1;height:6px;background:#0f3460;border-radius:3px;overflow:hidden}
+#detail-content .bar .fill div{height:100%;border-radius:3px}
+#detail-content .bar .fill .hp{background:#e94560}
+#detail-content .bar .fill .st{background:#e9c445}
+#detail-content .info{font-size:11px;color:#aaa;margin:4px 0;display:flex;flex-wrap:wrap;gap:4px 12px}
+#detail-content .info b{color:#eee}
+#detail-content .upcoming{margin-top:6px;font-size:11px;color:#ccc;border-top:1px solid #0f3460;padding-top:6px}
+#detail-content .upcoming .uline{display:block;padding:2px 0;line-height:1.5}
+#detail-content .upcoming .uline b{color:#e9c445;margin-right:4px}
+#detail-content .actions{margin-top:8px;display:flex;gap:5px}
+#detail-content .actions button{flex:1;padding:4px;border:1px solid #0f3460;border-radius:3px;background:#0f3460;color:#eee;cursor:pointer;font-size:11px}
+#detail-content .actions button:hover{background:#1a4a8a}
+#detail-content .goals-title{font-size:10px;color:#e9c445;text-transform:uppercase;letter-spacing:1px;margin-top:8px;border-bottom:1px solid #0f3460;padding-bottom:2px}
+#detail-content .goal-row{display:flex;align-items:center;gap:5px;font-size:11px;padding:2px 0}
+#detail-content .goal-row .g-icon{font-size:12px;width:14px;text-align:center}
+#detail-content .goal-row .g-desc{flex:1;color:#ccc}
+#detail-content .goal-row .g-progress{font-size:10px;color:#888;min-width:35px;text-align:right}
+#detail-content .goal-row .g-bar{width:35px;height:4px;background:#0f3460;border-radius:2px;overflow:hidden}
+#detail-content .goal-row .g-bar div{height:100%;border-radius:2px}
+#detail-content .goal-row.long .g-icon{color:#e9c445}
+#detail-content .goal-row.long .g-bar div{background:#e9c445}
+#detail-content .goal-row.short .g-icon{color:#0f3460}
+#detail-content .goal-row.short .g-bar div{background:#0f3460}
+#detail-content .attrs-row{font-size:9px;color:#555;padding:1px 0}
+#detail-content .attrs-row .a-cat{color:#0f3460;background:#0a0a1a;padding:0 4px;border-radius:2px;margin-right:6px;font-size:8px}
+
+/* Bottom: Log Panel */
+#bottom{height:0;background:#16213e;border-top:1px solid #0f3460;display:flex;flex-direction:column;overflow:hidden;transition:height .25s;flex-shrink:0}
+#bottom.open{height:180px}
+#bottom .tab-bar{display:flex;flex-shrink:0}
+#bottom .tab-bar button{flex:1;padding:4px;background:#0f3460;border:none;color:#aaa;cursor:pointer;font-size:11px}
+#bottom .tab-bar button.sel{background:#16213e;color:#eee;border-bottom:2px solid #e94560}
+#bottom .tab{flex:1;overflow-y:auto;display:none;padding:4px 8px;font-size:11px}
+#bottom .tab.active{display:block}
+#bottom-toggle{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:50;padding:2px 12px;background:#0f3460;border:1px solid #0f3460;border-bottom:none;color:#aaa;cursor:pointer;border-radius:4px 4px 0 0;font-size:10px}
+#bottom-toggle:hover{color:#eee}
+
+#events .e{padding:2px 0;border-bottom:1px solid #0f3460;color:#888;font-size:10px}
 #events .e span{color:#00ff88;margin-right:4px}
-.llm-session{border:1px solid #0f3460;border-radius:4px;margin:6px 0;padding:6px;background:#0d1b2a}
-.llm-session .meta{font-size:10px;color:#888;margin-bottom:4px}
-.llm-session .meta .npc{color:#e9c445;font-weight:bold}
-.llm-session .prompt{font-size:11px;color:#ccc;max-height:200px;overflow-y:auto;white-space:pre-wrap;background:#1a1a2e;padding:4px;border-radius:2px;margin:4px 0}
-.llm-session .response{font-size:13px;padding:4px 8px;border-radius:3px;margin:4px 0}
-.llm-session .response.ok{background:#0a2a1a;color:#00ff88}
-.llm-session .response.err{background:#2a0a0a;color:#ff4444}
-.llm-session .response.pending{background:#2a2a0a;color:#e9c445}
-.llm-session .think-box{margin:4px 0;border:1px solid #0f3460;border-radius:3px;overflow:hidden}
-.llm-session .think-box .think-header{cursor:pointer;padding:3px 8px;background:#0f3460;font-size:10px;color:#aaa;display:flex;justify-content:space-between}
-.llm-session .think-box .think-header:hover{background:#1a4a8a}
-.llm-session .think-box .think-body{font-size:10px;color:#888;padding:4px 8px;max-height:120px;overflow-y:auto;white-space:pre-wrap;background:#1a1a2e;display:none}
-.llm-session .think-box.open .think-body{display:block}
-.llm-session .reply-box{padding:4px 8px;border-radius:3px;margin:4px 0;font-size:13px}
-.llm-session .reply-box.ok{background:#0a2a1a;color:#00ff88}
-.llm-session .reply-box.err{background:#2a0a0a;color:#ff4444}
-#trace .t{margin:2px 0;padding:3px 5px;border-radius:3px;background:#0f3460}
-#trace .t .step{color:#e9c445;margin-right:5px}
-#trace .t .phase{color:#00ff88;margin-right:5px}
-#debug{padding:8px;border-top:1px solid #0f3460;display:flex;flex-wrap:wrap;gap:5px}
-#debug input,#debug select{padding:3px 5px;background:#1a1a2e;border:1px solid #0f3460;color:#eee;border-radius:3px;font-size:11px;width:65px}
-#debug select{width:85px}
-#debug button{padding:3px 7px;background:#0f3460;border:1px solid #0f3460;color:#eee;cursor:pointer;border-radius:3px;font-size:11px}
-#debug button:hover{background:#1a4a8a}
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:999;justify-content:center;align-items:center}
-.modal-overlay.active{display:flex}
-.modal{background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:16px;min-width:500px;max-width:700px;max-height:80vh;overflow-y:auto}
-.modal h3{margin-bottom:12px;font-size:16px;color:#e94560}
-.modal .close{float:right;cursor:pointer;font-size:20px;color:#aaa}
-.modal .sec{margin:10px 0}
-.modal .sec h4{font-size:13px;color:#e9c445;margin-bottom:4px}
-.modal .sec div{font-size:12px;color:#ccc;line-height:1.6}
+#trace .t{margin:1px 0;padding:2px 4px;border-radius:3px;background:#0f3460;font-size:10px}
+#trace .t .step{color:#e9c445;margin-right:4px}
+#trace .t .phase{color:#00ff88;margin-right:4px}
+
+.llm-session{border:1px solid #0f3460;border-radius:3px;margin:4px 0;padding:4px;background:#0d1b2a;font-size:10px}
+.llm-session .meta{color:#888;margin-bottom:2px}
+.llm-session .meta .npc-name{color:#e9c445;font-weight:bold}
+.llm-session .sess-tabs{display:flex;gap:1px;margin:2px 0}
+.llm-session .sess-tab{padding:1px 8px;font-size:9px;background:#0f3460;color:#aaa;border:none;border-radius:3px 3px 0 0;cursor:pointer}
+.llm-session .sess-tab.sel{background:#1a4a8a;color:#eee}
+.llm-session .sess-panel{display:none;font-size:10px;color:#ccc;max-height:120px;overflow-y:auto;white-space:pre-wrap;background:#1a1a2e;padding:4px;border-radius:0 3px 3px 3px}
+.llm-session .sess-panel.active{display:block}
+
+#debug-panel{padding:4px 8px;border-top:1px solid #0f3460;display:flex;flex-wrap:wrap;gap:4px}
+#debug-panel input,#debug-panel select{padding:2px 4px;background:#1a1a2e;border:1px solid #0f3460;color:#eee;border-radius:3px;font-size:10px;width:60px}
+#debug-panel select{width:75px}
+#debug-panel button{padding:2px 6px;background:#0f3460;border:1px solid #0f3460;color:#eee;cursor:pointer;border-radius:3px;font-size:10px}
+#debug-panel button:hover{background:#1a4a8a}
 </style>
 </head>
 <body>
 <div id="top">
-  <div class="time" id="time">Spring D1 0:00 Tick 0</div>
+  <div class="time" id="time">1年01月 00:00:00 Tick:0</div>
   <div class="divider"></div>
   <button onclick="send({type:'tick',count:1})">+1</button>
   <button onclick="send({type:'tick',count:6})">+6</button>
@@ -123,9 +139,9 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
   <div id="llm-bar" class="stopped">
     <span class="dot"></span>
     <span id="llm-text">LLM: Stopped</span>
-    <button onclick="send({type:'start_llm'})" style="font-size:10px;padding:2px 8px">Start</button>
-    <button onclick="send({type:'stop_llm'})" style="font-size:10px;padding:2px 8px">Stop</button>
-    <button onclick="send({type:'toggle_llm'})" style="font-size:10px;padding:2px 8px">Toggle</button>
+    <button onclick="send({type:'start_llm'})" style="font-size:10px;padding:1px 6px">Start</button>
+    <button onclick="send({type:'stop_llm'})" style="font-size:10px;padding:1px 6px">Stop</button>
+    <button onclick="send({type:'toggle_llm'})" style="font-size:10px;padding:1px 6px">Toggle</button>
   </div>
 </div>
 <div class="llm-thinking" id="thinking">
@@ -134,338 +150,274 @@ body{font:14px 'Microsoft YaHei',sans-serif;background:#1a1a2e;color:#eee;displa
   <div class="msg">LLM thinking...</div>
 </div>
 <div id="main">
-  <div id="npcs"></div>
-  <div id="right">
-    <div class="tab-bar">
-      <button class="sel" onclick="switchTab('events', this)">Events</button>
-      <button onclick="switchTab('llm-sessions', this)">LLM</button>
-      <button onclick="switchTab('trace', this)">Trace</button>
-    </div>
-    <div class="tab active" id="tab-events"><div id="events"></div></div>
-    <div class="tab" id="tab-llm-sessions"><div id="sessions"></div></div>
-    <div class="tab" id="tab-trace"><div id="trace"></div></div>
-    <div id="debug">
-      <select id="dbNpc"><option value="blacksmith">布洛克</option><option value="merchant">老雷</option><option value="guard">铁卫</option></select>
-      <input id="dbField" placeholder="field" value="hp">
-      <input id="dbValue" placeholder="value" value="50">
-      <button onclick="debugSetAttr()">SetAttr</button>
-      <input id="evType" placeholder="type" value="death" style="width:50px">
-      <input id="evTags" placeholder="tags" value="mine">
-      <button onclick="debugAddEvent()">AddEvent</button>
-    </div>
+  <div id="npc-list">
+    <h4>👥 NPC 列表</h4>
+    <div id="npc-list-items"></div>
+  </div>
+  <div id="map-container">
+    <canvas id="map-canvas"></canvas>
+    <button id="bottom-toggle" onclick="toggleBottom()">▲ 日志</button>
+  </div>
+  <div id="detail">
+    <h4 id="detail-title">📋 详情</h4>
+    <div id="detail-content"><div class="empty">点击 NPC 查看详情</div></div>
   </div>
 </div>
-
-<div class="modal-overlay" id="semModal"><div class="modal"><span class="close" onclick="closeModal()">&times;</span><div id="semContent"></div></div></div>
+<div id="bottom">
+  <div class="tab-bar">
+    <button class="sel" onclick="switchTab('events',this)">Events</button>
+    <button onclick="switchTab('llm-sessions',this)">LLM</button>
+    <button onclick="switchTab('trace',this)">Trace</button>
+    <button onclick="switchTab('debug',this)">Debug</button>
+  </div>
+  <div class="tab active" id="tab-events"><div id="events"></div></div>
+  <div class="tab" id="tab-llm-sessions"><div id="sessions"></div></div>
+  <div class="tab" id="tab-trace"><div id="trace"></div></div>
+  <div class="tab" id="tab-debug"><div id="debug-panel">
+    <select id="dbNpc"><option value="blacksmith">布洛克</option><option value="merchant">老雷</option><option value="guard">铁卫</option></select>
+    <input id="dbField" placeholder="field" value="hp">
+    <input id="dbValue" placeholder="value" value="50">
+    <button onclick="debugSetAttr()">SetAttr</button>
+    <input id="evType" placeholder="type" value="death" style="width:45px">
+    <input id="evTags" placeholder="tags" value="mine">
+    <button onclick="debugAddEvent()">AddEvent</button>
+  </div></div>
+</div>
 
 <script>
-let ws,lid=0;
-function connect(){
-  ws=new WebSocket(`ws://${location.host}/ws`);
-  ws.onmessage=e=>{
-    const m=JSON.parse(e.data);
-    if(m.type==='state') renderState(m)
-    else if(m.type==='event') addEvent(m.tick,m.text)
-    else if(m.type==='trace') addTrace(m.step,m.phase,m.detail)
-    else if(m.type==='semantic') showSemanticModal(m)
-    else if(m.type==='llm_status') updateLlmBar(m)
-    else if(m.type==='auto_tick_state') updateAutoTickUI(m)
-    else if(m.type==='llm_thinking'){lid=m.sessionId;showThinking(m.npcId)}
-    else if(m.type==='llm_done'){hideThinking();addSession(m);updateUpcoming(m)}
-    else if(m.type==='attr_changed') onAttrChanged(m)
-    else if(m.type==='goals_updated') onGoalsUpdated(m)
-  };
-  ws.onclose=()=>setTimeout(connect,2000);
-}
-connect();
+// ===== State =====
+let mapData=null,npcStates={},selectedNpcId=null;
+let view={x:0,y:0,zoom:1};
+const CELL=24;
+let dragging=false,dragSX=0,dragSY=0,dragVX=0,dragVY=0;
 
-function send(obj){if(ws&&ws.readyState===1)ws.send(JSON.stringify(obj))}
+const canvas=document.getElementById('map-canvas');
+const ctx=canvas.getContext('2d');
+const mc=document.getElementById('map-container');
 
-function updateLlmBar(m){
-  let bar=document.getElementById('llm-bar');
-  bar.className=m.running?'running':'stopped';
-  let t=m.running?(m.online?'LLM: Online':'LLM: Starting...'):'LLM: Stopped';
-  document.getElementById('llm-text').textContent=t;
+function resize(){
+  canvas.width=mc.clientWidth;
+  canvas.height=mc.clientHeight;
+  if(mapData){view.x=mapData.width*CELL/2;view.y=mapData.height*CELL/2;view.zoom=1}
+  render();
 }
+function centerView(){if(!mapData)return;view.x=mapData.width*CELL/2;view.y=mapData.height*CELL/2;view.zoom=1;render()}
+window.addEventListener('resize',resize);
 
-// Auto-tick state
-let autoRunning=false, autoInterval=2000, autoBlock=false;
-function updateAutoTickUI(m){
-  autoRunning=m.running; autoInterval=m.interval; autoBlock=m.blockOnThinking;
-  let btn=document.getElementById('btn-auto');
-  btn.textContent=autoRunning?'⏸ Pause':'▶ Auto';
-  btn.style.background=autoRunning?'#2a0a0a':'#0a2a1a';
-  btn.style.borderColor=autoRunning?'#ff4444':'#00ff88';
-  btn.style.color=autoRunning?'#ff4444':'#00ff88';
-  // Highlight active speed
-  document.querySelectorAll('#top button[id^=btn-speed]').forEach(b=>b.classList.remove('sel-speed'));
-  let speedBtn=document.getElementById('btn-speed'+
-    (autoInterval<=500?1:autoInterval<=1000?2:autoInterval<=2000?3:4));
-  if(speedBtn)speedBtn.classList.add('sel-speed');
-  // Block toggle
-  let bb=document.getElementById('btn-block');
-  bb.textContent=autoBlock?'☑ Block':'☐ Block';
-  bb.style.background=autoBlock?'#e9c445':'#2a2a0a';
-  bb.style.color=autoBlock?'#1a1a2e':'#e9c445';
-}
-function toggleAutoTick(){
-  if(autoRunning) send({type:'auto_tick',action:'stop'});
-  else send({type:'auto_tick',action:'start',interval:autoInterval,blockOnThinking:autoBlock});
-}
-function setAutoSpeed(ms){
-  autoInterval=ms;
-  if(autoRunning) send({type:'auto_tick',action:'set_interval',interval:ms});
-}
-function toggleBlock(){
-  autoBlock=!autoBlock;
-  if(autoRunning) send({type:'auto_tick',action:'set_block',blockOnThinking:autoBlock});
-  else updateAutoTickUI({running:false,interval:autoInterval,blockOnThinking:autoBlock});
-}
+const TCOL={'草地':'#4a7c3f','道路':'#c4a45a','水域':'#3a6b9e','建筑':'#6b5a4b','森林':'#2d5a1e','山脉':'#5a5a5a','边界':'#1a1a2e'};
+const t2c=n=>({草地:'G',道路:'R',水域:'W',建筑:'B',森林:'F',山脉:'M'}[n]||'G');
 
-function onGoalsUpdated(m){
-  let card=document.querySelector(`.npc[data-id="${m.npcId}"]`);
-  if(!card||!m.goals) return;
-  // Re-render goals section only
-  let goalsDiv=card.querySelector('.goals-title');
-  if(!goalsDiv) return;
-  // Remove old goal content after the title
-  let next=goalsDiv.nextSibling;
-  while(next&&!next.classList?.contains('upcoming')&&next.tagName!=='BUTTON'){
-    let t=next.nextSibling; next.remove(); next=t;
+function w2s(wx,wy){return{x:(wx*CELL-view.x)*view.zoom+canvas.width/2,y:(wy*CELL-view.y)*view.zoom+canvas.height/2}}
+function s2w(sx,sy){return{x:(sx-canvas.width/2)/view.zoom/CELL+view.x/CELL,y:(sy-canvas.height/2)/view.zoom/CELL+view.y/CELL}}
+
+function render(){
+  if(!mapData)return;
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const tl=s2w(0,0),br=s2w(w,h);
+  const sx=Math.max(0,Math.floor(tl.x)-1),sy=Math.max(0,Math.floor(tl.y)-1);
+  const ex=Math.min(mapData.width,Math.ceil(br.x)+1),ey=Math.min(mapData.height,Math.ceil(br.y)+1);
+  const cw=CELL*view.zoom,ch=CELL*view.zoom;
+  for(let gy=sy;gy<ey;gy++)for(let gx=sx;gx<ex;gx++){
+    const tc=gy<mapData.grid.length&&gx<mapData.grid[gy].length?mapData.grid[gy][gx]:'G';
+    let tn='草地';if(mapData.terrains)for(const[k,v]of Object.entries(mapData.terrains)){if(t2c(v.name)===tc){tn=v.name;break}}
+    const pos=w2s(gx,gy);ctx.fillStyle=TCOL[tn]||'#444';ctx.fillRect(pos.x,pos.y,cw+.5,ch+.5);
   }
-  // Build new goal HTML
-  let n={goals:m.goals};
-  let html='';
-  if(n.goals&&n.goals.length){
-    let long=n.goals.filter(g=>g.type==='long'&&!g.completed);
-    let short=n.goals.filter(g=>g.type==='short'&&!g.completed);
-    let done=n.goals.filter(g=>g.completed);
-    function renderGoal(g){
-      let icon=g.type==='long'?'★':'·';
-      let cls=g.type==='long'?'long':'short';
-      let mile=g.milestone?`<div class="g-milestone">→ ${g.milestone}</div>`:'';
-      return `<div class="goal-row ${cls}">
-        <span class="g-icon">${icon}</span><span class="g-desc">${g.desc}</span>
-        <span class="g-progress">${g.progress}%</span>
-        <div class="g-bar"><div style="width:${g.progress}%"></div></div>
-      </div>${mile}`;
-    }
-    if(long.length) html+='<div class="goal-section"><div class="gs-label">▸ 长期目标</div>'+long.map(renderGoal).join('')+'</div>';
-    if(short.length) html+='<div class="goal-section"><div class="gs-label">▸ 短期目标</div>'+short.map(renderGoal).join('')+'</div>';
-    if(done.length) html+='<div class="goal-section"><div class="gs-label">▸ 已完成</div>'+done.map(renderGoal).join('')+'</div>';
+  if(view.zoom>=1){
+    ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=.5;
+    for(let gy=sy;gy<=ey;gy++){const p1=w2s(sx,gy),p2=w2s(ex,gy);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke()}
+    for(let gx=sx;gx<=ex;gx++){const p1=w2s(gx,sy),p2=w2s(gx,ey);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke()}
   }
-  goalsDiv.insertAdjacentHTML('afterend', html);
-}
-
-function showThinking(npcId){
-  document.getElementById('thinking').classList.add('active');
-  document.getElementById('thinking-npc').textContent=npcId||'';
-}
-function hideThinking(){
-  document.getElementById('thinking').classList.remove('active');
-}
-function updateUpcoming(m){
-  if(!m.upcoming||!m.npcId) return;
-  let card=document.querySelector(`.npc[data-id="${m.npcId}"]`);
-  if(!card) return;
-  let upDiv=card.querySelector('.upcoming');
-  if(upDiv) upDiv.innerHTML=m.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join('<br>');
-}
-
-// Real-time attribute change handling
-function onAttrChanged(m){
-  if(m.key==='llm_thinking'){
-    let card=document.querySelector(`.npc[data-id="${m.entityId}"]`);
-    if(!card) return;
-    if(m.value===1||m.value==='1'){
-      card.classList.add('thinking');
-    }else{
-      card.classList.remove('thinking');
-    }
-  } else if(m.key==='location'||m.key==='current_action'){
-    // location/action change: update NPC card info line
-    let card=document.querySelector(`.npc[data-id="${m.entityId}"]`);
-    if(card){
-      let info=card.querySelector('.info');
-      if(info) info.innerHTML=buildInfoLine(m.entityId);
-    }
+  if(mapData.nodes)for(const n of mapData.nodes){
+    const pos=w2s(n.gridX+.5,n.gridY+.5);
+    if(pos.x<-50||pos.x>w+50||pos.y<-50||pos.y>h+50)continue;
+    const r=Math.max(4,6*view.zoom);
+    ctx.fillStyle=n.type==='commercial'?'#e9c445':n.type==='plaza'?'#00ff88':n.type==='military'?'#ff4444':n.type==='religious'?'#aa88ff':n.type==='workshop'?'#ff8844':n.type==='social'?'#44aaff':'#888';
+    ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.fill();
+    if(view.zoom>=.8){ctx.fillStyle='#fff';ctx.font=`${Math.max(9,11*view.zoom)}px 'Microsoft YaHei',sans-serif`;ctx.textAlign='center';ctx.fillText(n.name,pos.x,pos.y-r-3*view.zoom)}
+  }
+  for(const[eid,npc]of Object.entries(npcStates)){
+    const loc=npc.location||'';const node=mapData.nodes?.find(n=>n.id===loc);if(!node)continue;
+    const pos=w2s(node.gridX+.5,node.gridY+.5);if(pos.x<-30||pos.x>w+30||pos.y<-30||pos.y>h+30)continue;
+    const r=Math.max(6,9*view.zoom),sel=selectedNpcId===eid,mov=npc.moving==1||npc.moving==='1',dead=npc.dead==1||npc.dead==='1',think=npc.llmThinking;
+    ctx.beginPath();ctx.arc(pos.x,pos.y,r+(sel?3:0)*view.zoom,0,Math.PI*2);
+    ctx.fillStyle=sel?'#e94560':dead?'#555':think?'#e9c445':'#16213e';ctx.fill();
+    ctx.beginPath();ctx.arc(pos.x,pos.y,r,0,Math.PI*2);ctx.fillStyle=dead?'#333':mov?'#4488cc':'#44bb77';ctx.fill();
+    if(mov){ctx.strokeStyle='#88ccff';ctx.lineWidth=1.5*view.zoom;ctx.beginPath();ctx.arc(pos.x,pos.y,r+2*view.zoom,-.3,1.8);ctx.stroke()}
+    if(view.zoom>=.7){ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(9,11*view.zoom)}px 'Microsoft YaHei',sans-serif`;ctx.textAlign='center';ctx.fillText(npc.name||eid,pos.x,pos.y+r+12*view.zoom)}
   }
 }
 
-function buildInfoLine(id){
-  // Fetch latest attrs from last state -- for real-time we use DOM
-  return '';
+// Zoom & Pan
+mc.addEventListener('wheel',e=>{e.preventDefault();const rect=mc.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;const wb=s2w(mx,my);view.zoom=Math.max(.3,Math.min(5,view.zoom*(e.deltaY<0?1.15:.87)));const wa=s2w(mx,my);view.x+=(wb.x-wa.x)*CELL;view.y+=(wb.y-wa.y)*CELL;render()});
+mc.addEventListener('mousedown',e=>{if(e.button!==0)return;const rect=mc.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;const w=s2w(mx,my);let hit=null;for(const[eid,npc]of Object.entries(npcStates)){const node=mapData?.nodes?.find(n=>n.id===npc.location);if(!node)continue;const dx=w.x-(node.gridX+.5),dy=w.y-(node.gridY+.5);if(Math.sqrt(dx*dx+dy*dy)*CELL<12*view.zoom){hit=eid;break}}if(hit){selectNpc(hit);return}dragging=true;dragSX=e.clientX;dragSY=e.clientY;dragVX=view.x;dragVY=view.y;mc.classList.add('dragging')});
+window.addEventListener('mousemove',e=>{if(!dragging)return;view.x=dragVX-(e.clientX-dragSX)/view.zoom;view.y=dragVY-(e.clientY-dragSY)/view.zoom;render()});
+window.addEventListener('mouseup',()=>{dragging=false;mc.classList.remove('dragging')});
+mc.addEventListener('touchstart',e=>{if(e.touches.length===1){dragging=true;dragSX=e.touches[0].clientX;dragSY=e.touches[0].clientY;dragVX=view.x;dragVY=view.y}});
+mc.addEventListener('touchmove',e=>{if(!dragging)return;e.preventDefault();view.x=dragVX-(e.touches[0].clientX-dragSX)/view.zoom;view.y=dragVY-(e.touches[0].clientY-dragSY)/view.zoom;render()});
+mc.addEventListener('touchend',()=>{dragging=false});
+
+// ===== NPC Selection (shared by list click + map click) =====
+function selectNpc(eid){
+  selectedNpcId=eid;
+  updateNpcListHighlight();
+  updateDetailPanel();
+  render();
+}
+function updateNpcListHighlight(){
+  document.querySelectorAll('.npc-item').forEach(el=>el.classList.toggle('sel',el.dataset.id===selectedNpcId));
+  document.querySelectorAll('.npc-item').forEach(el=>{if(el.dataset.id===selectedNpcId)el.classList.add('sel');else el.classList.remove('sel')});
 }
 
-function renderAttrs(n){
-  if(!n.allAttrs) return '<div class="attrs-row"></div>';
-  // Tag categories for display
-  const basicTags=['vital','hp','world','travel'];
-  const itemTags=['daily','trade','currency'];
-  const ignore=['identity','meta','combat'];
-  let basic=[], items=[], special=[];
-  for(let [k,a] of Object.entries(n.allAttrs)){
-    if(!a||!a.t) continue;
-    let tags=a.t||[], v=a.v;
-    if(tags.some(t=>ignore.includes(t))) continue;
-    if(tags.some(t=>basicTags.includes(t))){
-      let label=k.replace(/_/g,' ');
-      if(k==='location') label='📍位置'; else if(k==='hp') label='❤️生命';
-      else if(k==='hp_max') { basic.push(`上限${v}`); continue; }
-      else if(k==='stamina') label='⚡体力'; else if(k==='stamina_max') continue;
-      else if(k==='moving'&&v==0) continue;
-      basic.push(`${label}:${v}`);
-    }else if(tags.some(t=>itemTags.includes(t))){
-      let icon=k.includes('food')?'🍖':k.includes('iron')?'⚒':k.includes('gold')?'💰':'📦';
-      items.push(`${icon}${v}`);
-    }else{
-      let label=k.replace(/_/g,' ');
-      if(v!==0&&v!=='0'&&v!=='') special.push(`${label}:${v}`);
-    }
-  }
+// ===== NPC List Rendering =====
+function renderNpcList(){
+  const container=document.getElementById('npc-list-items');
   let h='';
-  if(basic.length) h+=`<div class="attrs-row"><span class="a-cat">基础</span>${basic.join(' | ')}</div>`;
-  if(items.length) h+=`<div class="attrs-row"><span class="a-cat">道具</span>${items.join(' ')}</div>`;
-  if(special.length) h+=`<div class="attrs-row"><span class="a-cat">特殊</span>${special.join(' | ')}</div>`;
-  return h||'<div class="attrs-row"></div>';
-}
-
-let sessions=[];
-function addSession(m){
-  sessions.push(m);
-  renderSessions();
-}
-function renderSessions(){
-  let h='';
-  for(let s of sessions.slice(-20).reverse()){
-    let cls=s.error?'err':s.latency?'ok':'pending';
-    let meta=s.npcId+' @ T'+s.tick+(s.latency?` (${s.latency}ms)`:s.error?' (FAIL)':'');
-    // Split thinking and reply
-    let think='', reply=s.error?s.error:(s.response||'waiting...');
-    if(!s.error&&s.response){
-      let m=s.response.match(/<think>([\s\S]*?)<\/think>/);
-      if(m){ think=m[1].trim(); reply=s.response.replace(/<think>[\s\S]*?<\/think>/,'').trim(); }
-    }
-    let thinkHtml='';
-    if(think){
-      let sid='think-'+sessions.indexOf(s);
-      thinkHtml=`<div class="think-box" id="${sid}">
-        <div class="think-header" onclick="document.getElementById('${sid}').classList.toggle('open')">
-          <span>💭 思考过程</span><span style="font-size:9px">点击展开</span>
-        </div>
-        <div class="think-body">${think}</div>
-      </div>`;
-    }
-    h+=`<div class="llm-session">
-      <div class="meta"><span class="npc">${meta}</span></div>
-      <div class="prompt">${s.prompt||''}</div>
-      ${thinkHtml}
-      <div class="reply-box ${cls}">${reply}</div>
+  for(const[eid,npc]of Object.entries(npcStates)){
+    const hpPct=(npc.hpMax||0)>0?Math.max(0,(npc.hp||0)/(npc.hpMax||1)*100):0;
+    const sel=selectedNpcId===eid?' sel':'';
+    const think=npc.llmThinking?' thinking':'';
+    const st=npc.dead?'DEAD':npc.moving?'MOVING':'idle';
+    h+=`<div class="npc-item${sel}${think}" data-id="${eid}" onclick="selectNpc('${eid}')">
+      <div class="ni-name">${npc.name||eid} <span class="ni-persona">${npc.personality||''}</span>${npc.llmThinking?' <span class="ni-think">💭</span>':''}</div>
+      <div class="ni-hp"><div style="width:${hpPct}%"></div></div>
+      <div class="ni-info"><span>📍${npc.location||'?'}</span><span>${st}</span><span>💰${npc.gold||0}</span></div>
     </div>`;
   }
-  document.getElementById('sessions').innerHTML=h||'No LLM sessions yet';
+  container.innerHTML=h||'<div style="color:#555;padding:10px;font-size:11px">暂无 NPC</div>';
 }
 
-function renderState(s){
-  document.getElementById('time').textContent=`${s.season} D${s.day} ${s.timeBlock} H${s.hour} Tick ${s.tick}`;
-  let h='';
-  for(const[id,n]of Object.entries(s.npcs||{})){
-    let hpPct=Math.max(0,n.hp/n.hpMax*100),stPct=n.stamina/100*100;
-    let status=n.dead?'DEAD':n.moving?'MOVING':'idle';
-    let thinking=n.llmThinking;
-    let up=n.upcoming.map(u=>`T${u.tick} ${u.action}${u.detail?' '+u.detail:''}`).join(' &nbsp;');
-    // Goals
-    let goalsHtml='';
-    if(n.goals&&n.goals.length){
-      // Split by type
-      let long=n.goals.filter(g=>g.type==='long'&&!g.completed);
-      let short=n.goals.filter(g=>g.type==='short'&&!g.completed);
-      let done=n.goals.filter(g=>g.completed);
-      if(long.length||short.length||done.length){
-        goalsHtml='<div class="goals-title">🎯 目标</div>';
-        function renderGoal(g){
-          let icon=g.type==='long'?'★':'·';
-          let cls=g.type==='long'?'long':'short';
-          let mile=g.milestone?`<div class="g-milestone">→ ${g.milestone}</div>`:'';
-          return `<div class="goal-row ${cls}">
-            <span class="g-icon">${icon}</span><span class="g-desc">${g.desc}</span>
-            <span class="g-progress">${g.progress}%</span>
-            <div class="g-bar"><div style="width:${g.progress}%"></div></div>
-          </div>${mile}`;
-        }
-        if(long.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 长期目标</div>'+long.map(renderGoal).join('')+'</div>';
-        if(short.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 短期目标</div>'+short.map(renderGoal).join('')+'</div>';
-        if(done.length) goalsHtml+='<div class="goal-section"><div class="gs-label">▸ 已完成</div>'+done.map(renderGoal).join('')+'</div>';
+// ===== Detail Panel =====
+function updateDetailPanel(){
+  const container=document.getElementById('detail-content');
+  const title=document.getElementById('detail-title');
+  if(!selectedNpcId||!npcStates[selectedNpcId]){
+    container.innerHTML='<div class="empty">点击 NPC 查看详情</div>';
+    title.textContent='📋 详情';
+    return;
+  }
+  const npc=npcStates[selectedNpcId];
+  title.textContent='📋 '+(npc.name||selectedNpcId);
+  const hpPct=(npc.hpMax||0)>0?Math.max(0,(npc.hp||0)/(npc.hpMax||1)*100):0;
+  const stPct=(npc.staminaMax||0)>0?Math.max(0,(npc.stamina||0)/(npc.staminaMax||100)*50):50;
+  const st=npc.dead?'DEAD':npc.moving?'MOVING':'idle';
+  const up=(npc.upcoming||[]).map(u=>`<span class="uline"><b>T${u.tick}</b> ${u.detail||u.action}</span>`).join('')||'暂无日程';
+
+  let goalsHtml='';
+  if(npc.goals&&npc.goals.length){
+    const long=npc.goals.filter(g=>g.type==='long'&&!g.completed);
+    const short=npc.goals.filter(g=>g.type==='short'&&!g.completed);
+    const done=npc.goals.filter(g=>g.completed);
+    function rg(g){return`<div class="goal-row ${g.type}"><span class="g-icon">${g.type==='long'?'★':'·'}</span><span class="g-desc">${g.desc}</span><span class="g-progress">${g.progress}%</span><div class="g-bar"><div style="width:${g.progress}%"></div></div></div>`}
+    if(long.length)goalsHtml+='<div class="goals-title">🎯 长期目标</div>'+long.map(rg).join('');
+    if(short.length)goalsHtml+='<div class="goals-title" style="margin-top:4px">📌 短期目标</div>'+short.map(rg).join('');
+    if(done.length)goalsHtml+='<div class="goals-title" style="margin-top:4px;color:#555">✅ 已完成</div>'+done.map(rg).join('');
+  }
+
+  let attrsHtml='';
+  if(npc.allAttrs){
+    const basic=[],items=[];
+    for(const[k,a]of Object.entries(npc.allAttrs)){
+      if(!a||!a.t)continue;const tags=a.t||[],v=a.v;
+      if(tags.some(t=>['identity','meta','combat','travel'].includes(t)))continue;
+      if(tags.some(t=>['vital','hp','world'].includes(t))){
+        if(k==='hp_max'||k==='stamina_max')continue;if(k==='moving'&&v==0)continue;
+        basic.push(`${k.replace(/_/g,' ')}:${v}`);
+      }else if(tags.some(t=>['daily','trade','currency'].includes(t))){
+        items.push(`${k.replace(/_/g,' ')}:${v}`);
       }
     }
-    h+=`<div class="npc${thinking?' thinking':''}" data-id="${id}">
-      <h3>${n.name||id}<span class="think-badge"><span class="spinner-sm"></span>thinking</span><span class="persona">${n.personality||''}</span></h3>
-      <div class="bar"><div class="lbl">HP</div><div class="fill"><div class="hp" style="width:${hpPct}%"></div></div><span style="font-size:10px">${n.hp}/${n.hpMax}</span></div>
-      <div class="bar"><div class="lbl">SP</div><div class="fill"><div class="st" style="width:${stPct}%"></div></div><span style="font-size:10px">${n.stamina}</span></div>
-      <div class="info"><span>💰<b>${n.gold}</b></span> <span>📍<b>${n.location}</b></span> <span>${status}</span> <span style="color:#e94560">${n.currentAction}</span></div>
-      ${renderAttrs(n)}
-      ${goalsHtml}
-      <div class="upcoming">📋 ${up||'暂无日程'}</div>
-      <div class="actions">
-        <button onclick="send({type:'interact',npcId:'${id}'})">🤝 Interact</button>
-      </div>
-    </div>`;
+    if(basic.length)attrsHtml+=`<div class="attrs-row"><span class="a-cat">属性</span>${basic.join(' | ')}</div>`;
+    if(items.length)attrsHtml+=`<div class="attrs-row"><span class="a-cat">道具</span>${items.join(' | ')}</div>`;
   }
-  document.getElementById('npcs').innerHTML=h;
+
+  container.innerHTML=`
+    <h3>${npc.name||selectedNpcId}${npc.llmThinking?'<span class="think-badge">💭thinking</span>':''}<span class="persona">${npc.personality||''}</span></h3>
+    <div class="bar"><div class="lbl">HP</div><div class="fill"><div class="hp" style="width:${hpPct}%"></div></div><span>${npc.hp||0}/${npc.hpMax||0}</span></div>
+    <div class="bar"><div class="lbl">SP</div><div class="fill"><div class="st" style="width:${stPct}%"></div></div><span>${npc.stamina||0}</span></div>
+    <div class="info"><span>💰<b>${npc.gold||0}</b></span><span>📍<b>${npc.location||'?'}</b></span><span>⚡${st}</span>${npc.currentAction&&npc.currentAction!=='idle'?`<span style="color:#e94560">${npc.currentAction}</span>`:''}</div>
+    ${attrsHtml}
+    ${goalsHtml}
+    <div class="upcoming">📋 ${up}</div>
+    <div class="actions"><button onclick="send({type:'interact',npcId:'${selectedNpcId}'})">🤝 Interact</button><button onclick="send({type:'semantic',npcId:'${selectedNpcId}'})">🔍 Semantic</button></div>`;
 }
 
-let eventCount=0;
-function addEvent(tick,text){
-  let el=document.getElementById('events');
-  el.innerHTML+=`<div class="e"><span>[T${tick}]</span>${text}</div>`;
-  if(++eventCount>300) el.firstChild.remove();
-  el.scrollTop=el.scrollHeight;
+// Bottom panel toggle
+function toggleBottom(){const b=document.getElementById('bottom');const btn=document.getElementById('bottom-toggle');b.classList.toggle('open');btn.textContent=b.classList.contains('open')?'▼ 日志':'▲ 日志'}
+
+// ===== WebSocket =====
+let ws,lid=0;
+function connect(){ws=new WebSocket(`ws://${location.host}/ws`);ws.onmessage=e=>{const m=JSON.parse(e.data);
+  if(m.type==='map_data'){mapData=m.data;if(mapData.terrains&&Array.isArray(mapData.terrains)){const tm={};for(const t of mapData.terrains)tm[t.name]=t;mapData.terrains=tm}resize();render()}
+  else if(m.type==='state')onState(m);else if(m.type==='event')addEvent(m.tick,m.text);
+  else if(m.type==='trace')addTrace(m.step,m.phase,m.detail);
+  else if(m.type==='semantic'){const t=m.texts?Object.entries(m.texts).map(([k,v])=>k+': '+v).join('\n'):'none';alert(`[${m.npcId}]\n\n${t}\n\nSchedule: ${(m.upcoming||[]).map(u=>`T${u.tick}: ${u.action}`).join('\n')}\n\nCurrent: ${m.current||'idle'}`)}
+  else if(m.type==='llm_status'){const b=document.getElementById('llm-bar');if(m.error){b.className='error';document.getElementById('llm-text').textContent='LLM: Error'}else if(m.running&&m.online){b.className='running';document.getElementById('llm-text').textContent='LLM: Online'}else if(m.running){b.className='loading';document.getElementById('llm-text').textContent='LLM: Starting...'}else{b.className='stopped';document.getElementById('llm-text').textContent='LLM: Stopped'}}
+  else if(m.type==='auto_tick_state')updateAuto(m);
+  else if(m.type==='llm_thinking'){lid=m.sessionId;document.getElementById('thinking').classList.add('active');document.getElementById('thinking-npc').textContent=m.npcId||''}
+  else if(m.type==='llm_done'){document.getElementById('thinking').classList.remove('active');addSession(m);if(m.npcId&&m.upcoming){if(!npcStates[m.npcId])npcStates[m.npcId]={};npcStates[m.npcId].upcoming=m.upcoming;if(selectedNpcId===m.npcId)updateDetailPanel()}}
+  else if(m.type==='attr_changed'){if(!npcStates[m.entityId])npcStates[m.entityId]={};npcStates[m.entityId][m.key]=m.value;if(m.key==='llm_thinking')npcStates[m.entityId].llmThinking=(m.value==1||m.value==='1');render();renderNpcList();if(selectedNpcId===m.entityId)updateDetailPanel()}
+  else if(m.type==='goals_updated'){if(!npcStates[m.npcId])npcStates[m.npcId]={};npcStates[m.npcId].goals=m.goals;if(selectedNpcId===m.npcId)updateDetailPanel()}
+};ws.onclose=()=>setTimeout(connect,2000)}connect();
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+
+function onState(m){
+  const hh=String(m.hour).padStart(2,'0'),mm=String(m.minute||0).padStart(2,'0'),ss=String(m.second||0).padStart(2,'0'),mo=String(m.month||1).padStart(2,'0');
+  document.getElementById('time').textContent=`${m.year||1}年${mo}月 ${hh}:${mm}:${ss} Tick:${m.tick}`;
+  if(m.npcs)for(const[id,n]of Object.entries(m.npcs))npcStates[id]=n;
+  render();renderNpcList();if(selectedNpcId&&npcStates[selectedNpcId])updateDetailPanel();
 }
 
-function addTrace(step,phase,detail){
-  let el=document.getElementById('trace');
-  let ph=phase=='trigger'?'Trigger':phase=='collect'?'Collect':phase=='prompt'?'Prompt':phase=='llm'?'LLM':phase=='resolve'?'Resolve':phase;
-  let cl=phase=='llm'&&detail.includes('waiting')?' style="color:#e9c445"':phase=='llm'&&detail.includes('failed')?' style="color:#ff4444"':'';
-  el.innerHTML+=`<div class="t"${cl}><span class="step">[${step}]</span><span class="phase">${ph}</span>${detail}</div>`;
-  el.scrollTop=el.scrollHeight;
-  // Auto switch to Trace tab when traces come in
-  let tt=document.getElementById('tab-trace');
-  if(tt&&!tt.classList.contains('active')) switchTab('trace');
+// Auto-tick
+let ar=false,ai=2000,ab=false;
+function updateAuto(m){ar=m.running;ai=m.interval;ab=m.blockOnThinking;
+  const b=document.getElementById('btn-auto');b.textContent=ar?'⏸ Pause':'▶ Auto';b.style.background=ar?'#2a0a0a':'#0a2a1a';b.style.borderColor=ar?'#ff4444':'#00ff88';b.style.color=ar?'#ff4444':'#00ff88';
+  document.querySelectorAll('#top button[id^=btn-speed]').forEach(x=>x.classList.remove('sel-speed'));
+  const s=document.getElementById('btn-speed'+(ai<=500?1:ai<=1000?2:ai<=2000?3:4));if(s)s.classList.add('sel-speed');
+  const bb=document.getElementById('btn-block');bb.textContent=ab?'☑ Block':'☐ Block';bb.style.background=ab?'#e9c445':'#2a2a0a';bb.style.color=ab?'#1a1a2e':'#e9c445'}
+function toggleAutoTick(){send({type:'auto_tick',action:ar?'stop':'start',interval:ai,blockOnThinking:ab})}
+function setAutoSpeed(m){ai=m;if(ar)send({type:'auto_tick',action:'set_interval',interval:m})}
+function toggleBlock(){ab=!ab;if(ar)send({type:'auto_tick',action:'set_block',blockOnThinking:ab});else updateAuto({running:false,interval:ai,blockOnThinking:ab})}
+
+// Events & Trace
+let ec=0;
+function addEvent(tk,tx){const el=document.getElementById('events');el.innerHTML+=`<div class="e"><span>[T${tk}]</span>${tx}</div>`;if(++ec>300)el.firstChild.remove();el.scrollTop=el.scrollHeight}
+function addTrace(st,ph,dt){const el=document.getElementById('trace');el.innerHTML+=`<div class="t"><span class="step">[${st}]</span><span class="phase">${ph}</span>${dt}</div>`;el.scrollTop=el.scrollHeight}
+
+// LLM Sessions
+let ss=[];
+function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function addSession(m){ss.push(m);renderSessions()}
+function renderSessions(){
+  let h='';
+  for(let i=ss.length-1;i>=Math.max(0,ss.length-20);i--){
+    const s=ss[i],sid='s'+i,meta=s.npcId+' @ T'+s.tick+(s.latency?` (${s.latency}ms)`:s.error?' (FAIL)':'');
+    const sy=(s.prompt?.match(/\[system\]\s*([\s\S]*?)(?=\[user\]|$)/)||[])[1]?.trim()||s.prompt||'';
+    const ur=(s.prompt?.match(/\[user\]\s*([\s\S]*)/)||[])[1]?.trim()||'';
+    h+=`<div class="llm-session"><div class="meta"><span class="npc-name">${meta}</span></div>
+      <div class="sess-tabs">
+        ${sy?`<button class="sess-tab sel" onclick="sts('${sid}','sys',this)">Sys</button>`:''}
+        ${ur?`<button class="sess-tab${!sy?' sel':''}" onclick="sts('${sid}','usr',this)">User</button>`:''}
+        <button class="sess-tab${!sy&&!ur?' sel':''}" onclick="sts('${sid}','raw',this)">Raw</button></div>
+      ${sy?`<div class="sess-panel active" id="${sid}-sys">${escH(sy)}</div>`:''}
+      ${ur?`<div class="sess-panel${!sy?' active':''}" id="${sid}-usr">${escH(ur)}</div>`:''}
+      <div class="sess-panel${!sy&&!ur?' active':''}" id="${sid}-raw">${escH(s.response||s.error||'waiting...')}</div></div>`;
+  }
+  document.getElementById('sessions').innerHTML=h||'No sessions yet';
+}
+function sts(sid,panel,btn){const se=btn.parentElement.parentElement;se.querySelectorAll('.sess-tab').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');se.querySelectorAll('.sess-panel').forEach(p=>p.classList.remove('active'));const pe=document.getElementById(sid+'-'+panel);if(pe)pe.classList.add('active')}
+
+function switchTab(name,btn){
+  document.querySelectorAll('#bottom .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#bottom .tab-bar button').forEach(b=>b.classList.remove('sel'));
+  const tab=document.getElementById('tab-'+name);if(tab)tab.classList.add('active');
+  if(btn)btn.classList.add('sel');
 }
 
-function switchTab(name, btn){
-  document.querySelectorAll('#right .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#right .tab-bar button').forEach(b=>b.classList.remove('sel'));
-  let tab = document.getElementById('tab-'+name);
-  if(tab) tab.classList.add('active');
-  if(btn) btn.classList.add('sel');
-}
+function debugSetAttr(){send({type:'set_attr',npcId:document.getElementById('dbNpc').value,field:document.getElementById('dbField').value,value:parseInt(document.getElementById('dbValue').value)||document.getElementById('dbValue').value})}
+function debugAddEvent(){send({type:'add_event',eventType:document.getElementById('evType').value,tags:document.getElementById('evTags').value.split(','),data:{who:document.getElementById('evType').value==='death'?'miner':'?'},perceive:document.getElementById('dbNpc').value})}
 
-function showSemanticModal(m){
-  let texts=m.texts?Object.entries(m.texts).map(([k,v])=>k+': '+v).join('<br>'):'none';
-  let up=(m.upcoming||[]).map(u=>`T${u.tick}: ${u.action} ${u.desc}`).join('<br>')||'none';
-  let raw=m.rawAttrs?Object.entries(m.rawAttrs).map(([k,v])=>k+'='+v).join(', '):'';
-  document.getElementById('semContent').innerHTML=`
-    <h3>${m.npcId}</h3>
-    <div class="sec"><h4>Semantic</h4><div>${texts}</div></div>
-    <div class="sec"><h4>Schedule</h4><div>${up}</div></div>
-    <div class="sec"><h4>Current</h4><div>${m.current||'idle'}</div></div>
-    <div class="sec"><h4>Raw</h4><div>${raw}</div></div>`;
-  document.getElementById('semModal').classList.add('active');
-}
-function closeModal(){document.getElementById('semModal').classList.remove('active')}
-
-function debugSetAttr(){
-  send({type:'set_attr',npcId:document.getElementById('dbNpc').value,
-    field:document.getElementById('dbField').value,
-    value:parseInt(document.getElementById('dbValue').value)||document.getElementById('dbValue').value});
-}
-function debugAddEvent(){
-  send({type:'add_event',eventType:document.getElementById('evType').value,
-    tags:document.getElementById('evTags').value.split(','),
-    data:{who:document.getElementById('evType').value=='death'?'miner':'?'},
-    perceive:document.getElementById('dbNpc').value});
-}
+resize();
 </script>
 </body>
 </html>
